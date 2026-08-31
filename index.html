@@ -686,7 +686,9 @@
             <input type="time" id="bell-time" value="12:30" style="flex:none;width:112px;color-scheme:dark">
             <button class="btn btn-sm" id="bell-add" type="button">Add time</button>
             <button class="btn-ghost" id="bell-enable" type="button" style="padding:6px 12px;font-size:13px">Enable</button>
+            <button class="btn-ghost" id="bell-test" type="button" style="padding:6px 12px;font-size:13px">🔍 Test</button>
           </div>
+          <div class="psub" id="bell-debug" style="margin-top:8px;font-variant-numeric:tabular-nums"></div>
           <p class="psub" style="margin:10px 0 0">Android may hold app nudges while the app is fully closed — the Claude pushes are the ones that always land.</p>
         </section>
 
@@ -3479,21 +3481,72 @@
       addLog("Bell time added: " + t);
     });
   });
+  function bellDbg(msg){
+    var d = document.getElementById("bell-debug");
+    if (d) d.innerHTML += msg + "<br>";
+  }
+  function bellDbgClear(){
+    var d = document.getElementById("bell-debug");
+    if (d) d.innerHTML = "";
+  }
+  function requestNotifPermission(handle){
+    // handles both promise-based and old callback-based Android implementations
+    var handled = false;
+    function once(p){ if (!handled){ handled = true; handle(p); } }
+    try {
+      var pr = Notification.requestPermission(function(p){ once(p); });
+      if (pr && pr.then) pr.then(once).catch(function(e){ bellDbg("request rejected: " + (e && e.message)); once(Notification.permission); });
+      setTimeout(function(){ if (!handled) once(Notification.permission); }, 3000);
+    } catch (e){
+      bellDbg("request threw: " + (e && e.message));
+      once(Notification.permission);
+    }
+  }
   document.getElementById("bell-enable").addEventListener("click", function(){
-    if (!bellAvailable()){ toast("This view can't ring — use the phone app."); return; }
+    bellDbgClear();
+    if (!bellAvailable()){ bellDbg("Notification API missing in this view."); toast("This view can't ring — use the phone app."); return; }
     if (state.notifOn){
       mutate(function(){ state.notifOn = false; addLog("The bell falls silent"); });
       return;
     }
-    Notification.requestPermission().then(function(p){
+    bellDbg("permission before: " + Notification.permission);
+    requestNotifPermission(function(p){
+      bellDbg("permission after: " + p);
       if (p === "granted"){
         mutate(function(){ state.notifOn = true; addLog("The bell is rung — app nudges enabled"); });
         showNotif("The bell is set, adventurer. It will ring at your chosen hours.");
       } else {
-        toast("The browser refused — allow notifications for this site, then try again.");
+        bellDbg(p === "denied"
+          ? "Chrome has this site blocked. Chrome → Settings → Site settings → Notifications → allow abhishekmodi26.github.io."
+          : "No decision registered — Chrome never showed the prompt. Allow the site in Chrome's Site settings → Notifications, then Enable again.");
         renderBell();
       }
     });
+  });
+  document.getElementById("bell-test").addEventListener("click", function(){
+    bellDbgClear();
+    bellDbg("API: " + (typeof Notification !== "undefined" ? "present" : "MISSING"));
+    if (typeof Notification === "undefined") return;
+    bellDbg("permission: " + Notification.permission);
+    bellDbg("bell enabled in app: " + (state.notifOn ? "yes" : "no"));
+    bellDbg("service worker controlling: " + (navigator.serviceWorker && navigator.serviceWorker.controller ? "yes" : "no"));
+    if (Notification.permission !== "granted"){ bellDbg("→ fix permission first, then Test again."); return; }
+    var done = false;
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistration){
+      var t = setTimeout(function(){ if (!done){ done = true; bellDbg("SW timed out — trying direct…"); tryDirect(); } }, 2500);
+      navigator.serviceWorker.getRegistration().then(function(reg){
+        if (done) return;
+        if (reg && reg.showNotification){
+          reg.showNotification("Life Quest", { body: "🔔 Test ring — the bell works.", icon: "./icon-192.png", tag: "lq-test" })
+            .then(function(){ done = true; clearTimeout(t); bellDbg("→ RING SENT via service worker. Did you see it?"); })
+            .catch(function(e){ done = true; clearTimeout(t); bellDbg("SW ring failed: " + (e && e.message)); tryDirect(); });
+        } else { done = true; clearTimeout(t); bellDbg("no SW registration — trying direct…"); tryDirect(); }
+      }).catch(function(e){ if (!done){ done = true; clearTimeout(t); bellDbg("SW error: " + (e && e.message)); tryDirect(); } });
+    } else tryDirect();
+    function tryDirect(){
+      try { new Notification("Life Quest", { body: "🔔 Test ring (direct) — the bell works." }); bellDbg("→ RING SENT directly. Did you see it?"); }
+      catch (e){ bellDbg("direct ring failed: " + (e && e.message)); }
+    }
   });
   document.addEventListener("click", function(e){
     var brm = e.target.closest("[data-bellrm]");
