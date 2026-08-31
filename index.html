@@ -38,7 +38,7 @@
     --deco:"Cinzel Decorative", "Cinzel", Georgia, serif;
     --body:"Alegreya Sans", "Segoe UI", system-ui, sans-serif;
   }
-  html,body{margin:0;padding:0}
+  html,body{margin:0;padding:0;overflow-x:hidden}
   body{
     background:var(--ground);
     background-image:
@@ -414,28 +414,43 @@
     .stat,.quest,.stat .minibar > div,.qcheck,.wkbar > div{transition:none}
   }
 
+  html{scroll-behavior:smooth}
+  .panel[id],section[id]{scroll-margin-top:calc(66px + env(safe-area-inset-top,0px))}
+  .jumprow{display:none}
   .tl-s{display:none}
   /* ================= mobile ================= */
-  @media (max-width:560px){
+  @media (max-width:768px){
     body{font-size:15px}
-    .wrap{padding:16px 12px 96px}
+    .wrap{padding:16px 12px 46px}
     .tl-l{display:none}
     .tl-s{display:inline}
+    .jumprow{
+      display:flex;gap:7px;overflow-x:auto;padding:0 0 12px;margin:0 -2px;
+      -webkit-overflow-scrolling:touch;scrollbar-width:none;
+    }
+    .jumprow::-webkit-scrollbar{display:none}
+    .jumprow a{
+      flex:none;background:var(--card-2);border:1px solid var(--line);border-radius:16px;
+      color:var(--ink-mut);padding:7px 13px;font-size:12px;text-decoration:none;
+      font-family:var(--disp);font-weight:600;letter-spacing:.06em;
+    }
+    .jumprow a:active{color:var(--gold-hi);border-color:var(--gold)}
     .tabbar{
-      position:fixed;left:0;right:0;bottom:0;z-index:45;margin:0;
-      background:linear-gradient(180deg,var(--card-2),var(--card));
-      border-top:1px solid var(--line-hi);border-bottom:none;
+      position:fixed;left:0;right:0;top:0;bottom:auto;z-index:45;margin:0;
+      background:linear-gradient(180deg,var(--card),var(--card-2));
+      border-bottom:1px solid var(--line-hi);border-top:none;
       display:grid;grid-template-columns:repeat(5,1fr);gap:0;
-      padding:3px 2px calc(5px + env(safe-area-inset-bottom,0px));
-      box-shadow:0 -6px 24px rgba(0,0,0,.45);
+      padding:calc(4px + env(safe-area-inset-top,0px)) 2px 0;
+      box-shadow:0 6px 24px rgba(0,0,0,.45);
     }
     .tabbtn{
-      border-bottom:none;border-top:2px solid transparent;
-      padding:9px 2px 8px;font-size:10.5px;letter-spacing:.05em;text-align:center;
+      border-top:none;border-bottom:2px solid transparent;
+      padding:10px 2px 9px;font-size:10.5px;letter-spacing:.05em;text-align:center;
     }
-    .tabbtn.active{border-top-color:var(--gold);border-bottom:none;background:rgba(201,164,69,.07)}
-    #savebadge{bottom:calc(58px + env(safe-area-inset-bottom,0px));right:10px}
-    #toasts{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+    .tabbtn.active{border-bottom-color:var(--gold);border-top:none;background:rgba(201,164,69,.07)}
+    .wrap{padding-top:calc(58px + env(safe-area-inset-top,0px))}
+    #savebadge{bottom:12px;right:10px}
+    #toasts{bottom:70px}
     .qcheck{width:37px;height:37px}
     .wbtn{width:37px;height:37px}
     .btn,.btn-sm{min-height:40px}
@@ -551,6 +566,18 @@
 
   <!-- ============ TAB: QUESTS ============ -->
   <div class="tab active" id="tab-quests">
+    <nav class="jumprow" aria-label="Jump to section">
+      <a href="#sec-daily">Daily</a>
+      <a href="#sec-weekly">Training</a>
+      <a href="#sec-reframe">Reframe</a>
+      <a href="#sec-purse">Purse</a>
+      <a href="#sec-side">Side</a>
+      <a href="#sec-victory">Victory</a>
+      <a href="#sec-boss">Boss</a>
+      <a href="#sec-loot">Loot</a>
+      <a href="#sec-bell">Bell</a>
+      <a href="#newquest">＋ New</a>
+    </nav>
     <div class="cols">
       <div>
         <section class="panel" style="padding-bottom:14px">
@@ -563,7 +590,7 @@
           </div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="sec-reframe">
           <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
             <h2 class="ptitle">The Reframe</h2>
             <span class="hintlbl" id="rf-count" style="font-variant-numeric:tabular-nums"></span>
@@ -580,7 +607,7 @@
           <div id="rf-open"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="sec-purse">
           <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
             <h2 class="ptitle">The Purse</h2>
             <span class="hintlbl" id="sp-today" style="font-variant-numeric:tabular-nums"></span>
@@ -593,7 +620,7 @@
           </div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="sec-daily">
           <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
             <h2 class="ptitle">Daily Quests</h2>
             <span style="display:flex;gap:8px">
@@ -606,19 +633,19 @@
           <div id="daily-list"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="sec-weekly">
           <h2 class="ptitle">Weekly Training</h2>
           <p class="psub">Sessions per week — the count resets every Monday, one session per day each. During the Arc, every session short at week's end costs half its XP.</p>
           <div id="weekly-list"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="sec-boss">
           <h2 class="ptitle">The Boss</h2>
           <p class="psub" id="boss-sub"></p>
           <div id="boss-body"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="sec-side">
           <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
             <h2 class="ptitle">Side Quests</h2>
             <button class="btn-ghost" id="new-side" type="button" style="padding:4px 12px;font-size:12.5px">＋ New side quest</button>
@@ -657,7 +684,7 @@
       </div>
 
       <div>
-        <section class="panel">
+        <section class="panel" id="sec-victory">
           <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
             <h2 class="ptitle">Victory Conditions</h2>
             <button class="qedit" id="vc-edit" type="button" aria-label="Edit victory conditions">✎</button>
@@ -666,7 +693,7 @@
           <div id="victory-list"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="sec-loot">
           <h2 class="ptitle">Loot Table</h2>
           <p class="psub">Every XP earned is also a gold coin. Claim a reward to spend your gold — and a free loot still drops at every level-up.</p>
           <div id="reward-list"></div>
@@ -677,7 +704,7 @@
           </div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="sec-bell">
           <h2 class="ptitle">The Bell</h2>
           <p class="psub">This app's own nudges, rung on this device. Claude's pushes (07:00 · 14:00 · 19:30 · 22:30, Sunday coach review) ring separately from the chat.</p>
           <p class="psub" id="bell-status" style="margin-bottom:8px"></p>
