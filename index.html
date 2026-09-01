@@ -342,6 +342,42 @@
   }
   .moodbtn:hover{border-color:var(--mc);color:var(--ink)}
   .moodbtn.on{background:var(--mc);color:#140f20;border-color:var(--mc);box-shadow:0 0 12px var(--mc)}
+  .transgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .tside{background:var(--card-2);border:1px solid var(--line);border-radius:11px;padding:12px}
+  .tside.sealed{border-color:var(--gold)}
+  .tside h3{
+    font-family:var(--disp);font-size:12.5px;font-weight:700;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--gold-hi);margin:0 0 3px;text-align:center;
+  }
+  .tside .tdate{font-size:11.5px;color:var(--ink-faint);text-align:center;margin-bottom:9px}
+  .photorow2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .tstats{font-size:12.5px;color:var(--ink-mut);margin-top:9px;line-height:1.7;text-align:center}
+  .tstats b{color:var(--ink)}
+  .tlock{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    min-height:220px;color:var(--ink-faint);font-size:13px;text-align:center;padding:10px;
+  }
+  .tlock .lockico{font-size:26px;opacity:.6}
+  .tdelta{
+    grid-column:1 / -1;text-align:center;font-family:var(--disp);font-size:14px;
+    color:var(--gold-hi);letter-spacing:.08em;padding:10px 6px 2px;
+  }
+  .tin{
+    background:#0d0918;border:1px solid var(--line);border-radius:7px;color:var(--ink);
+    padding:7px 8px;font-size:12.5px;width:100%;min-width:0;box-sizing:border-box;
+  }
+  #scrollbox{align-items:flex-start;overflow-y:auto;padding:18px 10px}
+  .scrollpane{
+    background:linear-gradient(180deg,#241b40,var(--card));border:1px solid var(--gold);border-radius:14px;
+    max-width:640px;width:100%;margin:0 auto;padding:22px 18px 26px;box-shadow:0 20px 70px rgba(0,0,0,.65);
+  }
+  .scrollpane h2{font-family:var(--disp);font-size:17px;color:var(--gold-hi);letter-spacing:.14em;margin:0 0 2px;text-align:center}
+  .scrollpane .ssub{text-align:center;color:var(--ink-faint);font-size:12px;margin:0 0 14px}
+  .scrollpane h4{font-family:var(--disp);font-size:12px;color:var(--gold);letter-spacing:.16em;margin:16px 0 6px;text-transform:uppercase}
+  .scrollpane p,.scrollpane li{font-size:13.5px;line-height:1.6;margin:4px 0}
+  .scrollpane .srow{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:3px 0;border-bottom:1px dotted rgba(255,255,255,.06)}
+  .scrollpane .srow b{color:var(--gold-hi)}
+  .scrollpane .sins{background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.25);border-radius:9px;padding:10px 12px;margin:6px 0;font-size:13.5px;line-height:1.6}
   .photorow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
   @media (max-width:600px){.photorow{grid-template-columns:repeat(2,1fr)}}
   .photoslot{
@@ -362,6 +398,13 @@
   @media (max-width:600px){.cigallery{grid-template-columns:repeat(2,1fr)}}
   .cigallery img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer}
   #photobox img{max-width:min(92vw,560px);max-height:84vh;border-radius:10px;border:1px solid var(--gold)}
+  .exblock{border:1px solid var(--line);border-radius:9px;padding:9px;margin-bottom:8px;background:rgba(0,0,0,.12)}
+  .exblock input{background:#0d0918;border:1px solid var(--line);border-radius:7px;color:var(--ink);padding:8px 9px;font-size:13.5px;min-width:0}
+  .exhint{font-size:11.5px;color:var(--gold);margin-top:5px;min-height:14px}
+  .setrow{display:flex;gap:6px;margin-top:6px;align-items:center}
+  .setrow .s-kg,.setrow .s-reps{flex:1;max-width:96px;font-variant-numeric:tabular-nums}
+  .setno{width:18px;text-align:right;color:var(--ink-faint);font-size:12px;font-variant-numeric:tabular-nums}
+  .setx{color:var(--ink-faint);font-size:12px}
   .liftrow{display:flex;gap:6px;margin-bottom:6px}
   .liftrow input{background:#0d0918;border:1px solid var(--line);border-radius:7px;color:var(--ink);padding:8px 9px;font-size:13.5px;min-width:0}
   .liftrow .l-name{flex:2.2}
@@ -487,6 +530,10 @@
     .btn{padding:8px 12px;font-size:13.5px}
     .rectable{font-size:12.5px;min-width:0}
     #toasts{bottom:56px}
+    .transgrid{grid-template-columns:1fr}
+    .tdelta{font-size:12.5px;letter-spacing:.05em}
+    .addreward input{min-width:0}
+    .panel{overflow:hidden}
   }
 </style>
 
@@ -534,18 +581,98 @@
 
   <!-- ============ TAB: BODY / MIRROR ============ -->
   <div class="tab" id="tab-body">
+    <section class="panel" id="sec-transform">
+      <h2 class="ptitle">The Transformation</h2>
+      <p class="psub">Day One against the Final Day — the whole arc held in two portraits. Seal the first on 1 September; the last unlocks in the arc's final week. When both stand, the Final Scroll opens — the full account of what changed, and what it means.</p>
+      <div class="transgrid" id="trans-grid"></div>
+    </section>
+
+    <section class="panel" id="sec-guide">
+      <h2 class="ptitle">Where the Tape Goes</h2>
+      <p class="psub">Same spots every week — the trend is only as honest as the tape. Morning, unflexed, tape level, snug but never digging in.</p>
+      <div style="display:flex;justify-content:center">
+      <svg viewBox="0 0 340 520" style="max-width:330px;width:100%" role="img" aria-label="Body diagram marking where each measurement is taken">
+        <g fill="#3a2f5e" stroke="#5a4b8a" stroke-width="1.5" stroke-linejoin="round">
+          <ellipse cx="140" cy="36" rx="19" ry="23"/>
+          <path d="M130,56 L130,72 Q140,77 150,72 L150,56 Q140,62 130,56 Z"/>
+          <path d="M104,80
+                   C100,88 100,96 100,104 C101,116 102,122 102,128
+                   C103,150 106,174 108,196 C107,206 105,214 104,222
+                   C102,234 100,244 100,254 C100,268 101,280 102,290
+                   C104,308 106,324 107,340 C105,354 103,368 104,382
+                   C106,402 110,420 114,438 L113,450 Q120,456 130,454 L130,438
+                   C129,420 128,402 128,386 C129,370 130,356 130,344
+                   C131,326 133,310 135,296 C137,286 139,278 140,272
+                   C141,278 143,286 145,296 C147,310 149,326 150,344
+                   C150,356 151,370 152,386 C152,402 151,420 150,438 L150,454 Q160,456 167,450 L166,438
+                   C170,420 174,402 176,382 C177,368 175,354 173,340
+                   C174,324 176,308 178,290 C179,280 180,268 180,254
+                   C180,244 178,234 176,222 C175,214 173,206 172,196
+                   C174,174 177,150 178,128 C178,122 179,116 180,104
+                   C180,96 180,88 176,80 C166,73 114,73 104,80 Z"/>
+          <path d="M100,92 C92,100 87,112 84,126 C81,142 80,158 79,176 C78,196 77,214 77,232 C77,244 78,254 81,260 Q86,264 88,258 C90,250 91,240 91,230 C92,212 93,196 94,178 C95,160 96,144 98,128 C99,116 100,104 102,96 Z"/>
+          <path d="M180,92 C188,100 193,112 196,126 C199,142 200,158 201,176 C202,196 203,214 203,232 C203,244 202,254 199,260 Q194,264 192,258 C190,250 189,240 189,230 C188,212 187,196 186,178 C185,160 184,144 182,128 C181,116 180,104 178,96 Z"/>
+        </g>
+        <g stroke="var(--gold, #c9a445)" stroke-width="1.4" stroke-dasharray="5 3">
+          <line x1="129" y1="64" x2="151" y2="64"/><line x1="151" y1="64" x2="216" y2="60"/>
+          <line x1="101" y1="128" x2="179" y2="128"/><line x1="179" y1="128" x2="216" y2="124"/>
+          <line x1="182" y1="152" x2="200" y2="152"/><line x1="200" y1="152" x2="216" y2="156"/>
+          <line x1="107" y1="196" x2="173" y2="196"/><line x1="173" y1="196" x2="216" y2="192"/>
+          <line x1="103" y1="222" x2="177" y2="222"/><line x1="177" y1="222" x2="216" y2="220"/>
+          <line x1="100" y1="254" x2="180" y2="254"/><line x1="180" y1="254" x2="216" y2="252"/>
+          <line x1="102" y1="298" x2="136" y2="298"/><line x1="136" y1="298" x2="216" y2="294"/>
+          <line x1="104" y1="388" x2="129" y2="388"/><line x1="129" y1="388" x2="216" y2="384"/>
+        </g>
+        <g fill="var(--gold-hi, #eed171)" font-size="12" font-weight="600" font-family="inherit">
+          <text x="220" y="64">NECK</text>
+          <text x="220" y="128">CHEST</text>
+          <text x="220" y="160">ARM L/R</text>
+          <text x="220" y="196">WAIST</text>
+          <text x="220" y="224">STOMACH</text>
+          <text x="220" y="256">HIPS</text>
+          <text x="220" y="298">THIGH L/R</text>
+          <text x="220" y="388">CALF L/R</text>
+        </g>
+      </svg>
+      </div>
+      <div style="font-size:12.5px;color:var(--ink-mut);line-height:1.7;margin-top:6px">
+        <b style="color:var(--ink)">Neck</b> — just below the Adam's apple, tape sloping slightly down at the front ·
+        <b style="color:var(--ink)">Chest</b> — across the nipple line, mid-breath ·
+        <b style="color:var(--ink)">Arm</b> — at the biceps' widest point, arm hanging relaxed ·
+        <b style="color:var(--ink)">Waist</b> — the narrowest point, above the navel ·
+        <b style="color:var(--ink)">Stomach</b> — level across the navel ·
+        <b style="color:var(--ink)">Hips</b> — around the widest point of the glutes ·
+        <b style="color:var(--ink)">Thigh</b> — at the highest point, just below the glute fold ·
+        <b style="color:var(--ink)">Calf</b> — at its widest point, standing with weight even.
+      </div>
+    </section>
+
     <section class="panel">
       <h2 class="ptitle">Weekly Check-In</h2>
       <p class="psub">Once a week: the scale, four angles, and an honest word. Saving with a photo also marks today's Progress Portrait quest done.</p>
       <div class="addreward" style="margin:0 0 8px">
         <input type="number" id="ci-kg" placeholder="Weight (kg)" min="30" max="300" step="0.1" style="flex:1">
-        <input type="number" id="ci-waist" placeholder="Waist (cm)" min="40" max="220" step="0.5" style="flex:1">
+        <input type="number" id="ci-waist" placeholder="Waist (in)" min="15" max="90" step="0.1" style="flex:1">
       </div>
       <div class="addreward" style="margin:0 0 12px;flex-wrap:wrap">
-        <input type="number" id="ci-chest" placeholder="Chest (cm)" min="50" max="220" step="0.5" style="flex:1;min-width:90px">
-        <input type="number" id="ci-hips" placeholder="Hips (cm)" min="50" max="220" step="0.5" style="flex:1;min-width:90px">
-        <input type="number" id="ci-arm" placeholder="Arm (cm)" min="15" max="80" step="0.5" style="flex:1;min-width:90px">
-        <input type="number" id="ci-thigh" placeholder="Thigh (cm)" min="30" max="120" step="0.5" style="flex:1;min-width:90px">
+        <input type="number" id="ci-neck" placeholder="Neck (in)" min="8" max="30" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-chest" placeholder="Chest (in)" min="15" max="90" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-stomach" placeholder="Stomach (in)" min="15" max="90" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-hips" placeholder="Hips (in)" min="15" max="90" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-arml" placeholder="L arm (in)" min="5" max="35" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-armr" placeholder="R arm (in)" min="5" max="35" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-thighl" placeholder="L thigh (in)" min="8" max="50" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-thighr" placeholder="R thigh (in)" min="8" max="50" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-calfl" placeholder="L calf (in)" min="6" max="35" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-calfr" placeholder="R calf (in)" min="6" max="35" step="0.1" style="flex:1;min-width:90px">
+      </div>
+      <div class="hintlbl" id="ci-bmi" style="margin:-4px 0 10px;color:var(--gold-hi)"></div>
+      <div class="hintlbl" style="margin:0 0 4px">Weekly vitals — from your watch or a morning reading</div>
+      <div class="addreward" style="margin:0 0 12px;flex-wrap:wrap">
+        <input type="number" id="ci-hrv" placeholder="HRV (ms)" min="5" max="250" step="1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-rhr" placeholder="Resting HR (bpm)" min="30" max="130" step="1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-vo2" placeholder="VO₂ max" min="10" max="90" step="0.1" style="flex:1;min-width:90px">
+        <input type="number" id="ci-rechr" placeholder="Recovery HR (bpm drop)" min="1" max="80" step="1" style="flex:1;min-width:90px" title="How far your heart rate fell 1 minute after your last run — Health app → Cardio Recovery">
       </div>
       <div class="photorow" id="photo-slots">
         <label class="photoslot"><span>Front</span><input type="file" accept="image/*" data-angle="front" hidden><img alt="" hidden></label>
@@ -617,6 +744,19 @@
             <input type="number" id="sp-amt" placeholder="₹" min="0" step="1" style="flex:none;width:110px" aria-label="Amount in rupees">
             <input type="text" id="sp-what" placeholder="On what?" maxlength="80" aria-label="What for">
             <button class="btn btn-sm" id="sp-add" type="button">Log</button>
+          </div>
+        </section>
+
+        <section class="panel" id="sec-ember">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+            <h2 class="ptitle">The Ember</h2>
+            <span class="hintlbl" id="em-today" style="font-variant-numeric:tabular-nums"></span>
+          </div>
+          <p class="psub">The old flame. Tap it the moment you give in — the toll grows with each one in a day, and an honest count is the only count worth keeping.</p>
+          <div class="addreward" style="align-items:center;flex-wrap:wrap">
+            <button class="btn btn-sm" id="em-add" type="button" style="border-color:#7a3a3a;color:#e8b4b4">🔥 It burned</button>
+            <button class="btn-ghost" id="em-undo" type="button" style="padding:6px 12px;font-size:12.5px">Undo</button>
+            <span class="hintlbl" id="em-streak"></span>
           </div>
         </section>
 
@@ -820,8 +960,15 @@
 
     <section class="panel">
       <h2 class="ptitle">Body Ledger</h2>
-      <p class="psub">Weigh-ins from your weekly check-ins in The Mirror tab.</p>
+      <p class="psub">Weigh-ins from your weekly check-ins in The Mirror tab. Weight in kg; every tape measurement in inches.</p>
       <div class="tscroll"><table class="rectable" id="body-table"></table></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="ptitle">Vitals Watch</h2>
+      <p class="psub">HRV, resting heart rate, VO₂ max and recovery HR from your weekly check-ins — with the week-on-week change beside each.</p>
+      <div class="tscroll"><table class="rectable" id="vitals-table"></table></div>
+      <div id="vitals-insight" style="margin-top:10px;font-size:13.5px;color:var(--mut);line-height:1.55"></div>
     </section>
 
     <section class="panel">
@@ -836,10 +983,12 @@
       <div class="erow2">
         <button class="btn" id="vault-export" type="button">Export backup</button>
         <label class="btn-ghost" style="cursor:pointer">Restore from file<input type="file" id="vault-import" accept=".json,application/json" hidden></label>
+        <button class="btn-ghost" id="vault-raven" type="button">🐦‍⬛ Send the Raven</button>
+        <button class="btn-ghost" id="vault-share" type="button">🕊 Sharing Scroll</button>
         <button class="btn-ghost" id="herald" type="button">📜 Share a progress scroll</button>
       </div>
       <p class="psub" id="vault-note" style="margin:10px 0 0"></p>
-      <p class="psub" style="margin:8px 0 0">Witnesses: to let your wife or trainer <b>view</b> the ledger, upload your weekly backup to your app's repo renamed <b>progress.json</b>, then send them your app link with <b>?view</b> at the end — they see your real record, read-only, refreshed whenever you upload a new backup.</p>
+      <p class="psub" style="margin:8px 0 0">Witnesses: to let your wife or trainer <b>view</b> the ledger, tap <b>Send the Raven</b> — it delivers the Sharing Scroll straight to your repo as <b>progress.json</b> in one tap (one-time key setup). Or upload the Sharing Scroll by hand. Then send them your app link with <b>?view</b> at the end — they see your record read-only, refreshed whenever you upload a new scroll. The Sharing Scroll strips your private entries — journals, chronicle, reframes, the Ember, the Coin Ledger, and all photos — keeping weight, measurements, vitals, training, sleep, and streaks. Keep the full <b>Export backup</b> for yourself only; the repo is public.</p>
     </section>
 
     <section class="panel">
@@ -858,6 +1007,21 @@
       <div class="tscroll"><table class="rectable" id="ride-table"></table></div>
       <div class="yearhead" style="margin-top:16px">Iron Sessions</div>
       <div class="tscroll"><table class="rectable" id="gym-table"></table></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="ptitle">Exercise Book</h2>
+      <p class="psub">Pick a lift — every session it appears in, the top set, the estimated one-rep max, and your standing record.</p>
+      <select id="exbook-sel" style="width:100%;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:9px 10px;font-size:14px;margin-bottom:8px"></select>
+      <div id="exbook-best" class="hintlbl" style="margin-bottom:8px"></div>
+      <div class="tscroll"><table class="rectable" id="exbook-table"></table></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="ptitle">Ember Ledger</h2>
+      <p class="psub">Every time the old flame won — when, how often, and what it cost. The empty rows are the victory.</p>
+      <div id="ember-note" class="hintlbl" style="margin-bottom:8px"></div>
+      <div class="tscroll"><table class="rectable" id="ember-table"></table></div>
     </section>
 
     <section class="panel">
@@ -923,11 +1087,12 @@
 </div>
 
 <div class="overlay" id="photobox" hidden><img alt="Progress photo"></div>
+<div class="overlay" id="scrollbox" hidden><div class="scrollpane" id="scrollpane"></div></div>
 
 <div id="toasts" aria-live="polite"></div>
 <div id="savebadge">…</div>
 
-<script type="application/json" id="save">{"v":3,"name":"Abhishek","xp":0,"stats":{"fit":0,"lrn":0,"gld":0,"hab":0},"quests":[{"id":"d-sleep","title":"Rest Well — log last night's sleep","area":"fit","diff":"easy","type":"daily","form":"sleep","streak":0,"best":0,"lastDone":""},{"id":"d-water","title":"Drink the Waters — a gallon a day","area":"fit","diff":"easy","type":"daily","kind":"water","target":15,"log":{},"streak":0,"best":0,"lastDone":""},{"id":"d-steps","title":"March of 15,000 Steps","area":"fit","diff":"hard","type":"daily","kind":"counter","target":15000,"unit":"steps","log":{},"streak":0,"best":0,"lastDone":""},{"id":"d-med","title":"Still the Mind — meditation","area":"hab","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-read","title":"Read the Tomes — 10 pages of nonfiction","area":"lrn","diff":"med","type":"daily","form":"reading","streak":0,"best":0,"lastDone":""},{"id":"d-sub","title":"Read the Broadsheets — 1 Substack article","area":"lrn","diff":"easy","type":"daily","form":"article","streak":0,"best":0,"lastDone":""},{"id":"d-chron","title":"Chronicle the Day","area":"hab","diff":"med","type":"daily","form":"chronicle","streak":0,"best":0,"lastDone":""},{"id":"d-gold","title":"Tend the Treasury — log today's spending","area":"gld","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-morn","title":"Morning Ritual — up early, 30 min before the phone","area":"hab","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-out","title":"Open-Air Training — 45 min outdoors","area":"fit","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-diet","title":"Keep the Feast Clean — whole foods only, no junk, no sugar, no alcohol","area":"fit","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-photo","title":"Progress Portrait — today's photo","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-dopa","title":"Guard the Mind — social media under 30 min","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-deep","title":"The Craft — 1 hour of deep work on a skill","area":"lrn","diff":"hard","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-cold","title":"Ice Rite — end the shower cold","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-nocomp","title":"Tongue of Silver — no complaint left unreframed","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-clean","title":"Clean Speech — no foul language with anyone","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"w-run","title":"The Runner's Path — go for a run","area":"fit","diff":"med","type":"weekly","target":3,"week":{"key":"","count":0},"lastDone":""},{"id":"w-gym","title":"Forge of Iron — intense gym session","area":"fit","diff":"hard","type":"weekly","target":3,"week":{"key":"","count":0},"lastDone":""},{"id":"w-cycle","title":"Ride the Wind — cycling","area":"fit","diff":"med","type":"weekly","target":2,"week":{"key":"","count":0},"lastDone":""},{"id":"q5","title":"Slay a Lingering Task — finish something you've been avoiding","area":"hab","diff":"hard","type":"side","done":false}],"rewards":[{"name":"One hour of guilt-free gaming","cost":250},{"name":"Order your favourite snack","cost":400},{"name":"A small treat under ₹500","cost":600},{"name":"Movie night","cost":800},{"name":"Weekend trip — the long-haul prize","cost":6000}],"lootV2":1,"coins":0,"arc":{"start":"2026-09-01","end":"2026-12-31","swept":""},"goals":{"weightStart":104,"weightTarget":89,"run5k":30,"deadlift":120,"books":7},"body":[],"log":[],"books":[],"journal":[],"articles":[],"chronicle":[],"sleep":[],"gaps":[],"reframes":[]}</script>
+<script type="application/json" id="save">{"v":3,"name":"Abhishek","xp":0,"stats":{"fit":0,"lrn":0,"gld":0,"hab":0},"quests":[{"id":"d-sleep","title":"Rest Well — log last night's sleep","area":"fit","diff":"easy","type":"daily","form":"sleep","streak":0,"best":0,"lastDone":""},{"id":"d-water","title":"Drink the Waters — a gallon a day","area":"fit","diff":"easy","type":"daily","kind":"water","target":15,"log":{},"streak":0,"best":0,"lastDone":""},{"id":"d-steps","title":"March of 15,000 Steps","area":"fit","diff":"hard","type":"daily","kind":"counter","target":15000,"unit":"steps","log":{},"streak":0,"best":0,"lastDone":""},{"id":"d-med","title":"Still the Mind — meditation","area":"hab","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-read","title":"Read the Tomes — 10 pages of nonfiction","area":"lrn","diff":"med","type":"daily","form":"reading","streak":0,"best":0,"lastDone":""},{"id":"d-sub","title":"Read the Broadsheets — 1 Substack article","area":"lrn","diff":"easy","type":"daily","form":"article","streak":0,"best":0,"lastDone":""},{"id":"d-chron","title":"Chronicle the Day","area":"hab","diff":"med","type":"daily","form":"chronicle","streak":0,"best":0,"lastDone":""},{"id":"d-gold","title":"Tend the Treasury — log today's spending","area":"gld","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-morn","title":"Morning Ritual — up early, 30 min before the phone","area":"hab","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-out","title":"Open-Air Training — 45 min outdoors","area":"fit","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-diet","title":"Keep the Feast Clean — whole foods only, no junk, no sugar, no alcohol","area":"fit","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-photo","title":"Progress Portrait — today's photo","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-dopa","title":"Guard the Mind — social media under 30 min","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-deep","title":"The Craft — 1 hour of deep work on a skill","area":"lrn","diff":"hard","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-cold","title":"Ice Rite — end the shower cold","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-nocomp","title":"Tongue of Silver — no complaint left unreframed","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-clean","title":"Clean Speech — no foul language with anyone","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-vow","title":"The Monk's Vow — self-command held all day","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"w-run","title":"The Runner's Path — go for a run","area":"fit","diff":"med","type":"weekly","target":3,"week":{"key":"","count":0},"lastDone":""},{"id":"w-gym","title":"Forge of Iron — intense gym session","area":"fit","diff":"hard","type":"weekly","target":3,"week":{"key":"","count":0},"lastDone":""},{"id":"w-cycle","title":"Ride the Wind — cycling","area":"fit","diff":"med","type":"weekly","target":2,"week":{"key":"","count":0},"lastDone":""},{"id":"q5","title":"Slay a Lingering Task — finish something you've been avoiding","area":"hab","diff":"hard","type":"side","done":false}],"rewards":[{"name":"One hour of guilt-free gaming","cost":250},{"name":"Order your favourite snack","cost":400},{"name":"A small treat under ₹500","cost":600},{"name":"Movie night","cost":800},{"name":"Weekend trip — the long-haul prize","cost":6000}],"lootV2":1,"coins":0,"arc":{"start":"2026-09-01","end":"2026-12-31","swept":""},"goals":{"weightStart":101.2,"weightTarget":89,"run5k":30,"deadlift":120,"books":7},"body":[],"log":[],"books":[],"journal":[],"articles":[],"chronicle":[],"sleep":[],"gaps":[],"reframes":[]}</script>
 
 <script>
 (function(){
@@ -966,8 +1131,9 @@
   state.xpDaily = state.xpDaily || {};
   state.tollLog = state.tollLog || {};
   state.body = state.body || [];
-  state.goals = state.goals || { weightStart: 104, weightTarget: 89, run5k: 30, deadlift: 120, books: 7 };
+  state.goals = state.goals || { weightStart: 101.2, weightTarget: 89, run5k: 30, deadlift: 120, books: 7 };
   state.checkins = state.checkins || [];
+  state.transform = state.transform || {};
   state.niggles = state.niggles || [];
   state.chapters = state.chapters || [];
   state.trophies = state.trophies || {};
@@ -975,6 +1141,13 @@
   state.reframes.forEach(function(r, i){ if (!r.id) r.id = "rf" + i + (r.t || "").replace(/-/g, ""); });
   state.notifTimes = state.notifTimes || ["08:30", "13:30", "21:00"];
   state.notifOn = !!state.notifOn;
+  if (!state.ws1012){
+    state.ws1012 = 1;
+    if (state.goals.weightStart === 104) state.goals.weightStart = 101.2;
+  }
+  if (!state.quests.some(function(q){ return q.id === "d-vow"; })){
+    state.quests.push({ id: "d-vow", title: "The Monk's Vow — self-command held all day", area: "hab", diff: "med", type: "daily", created: todayStr(), streak: 0, best: 0, lastDone: "" });
+  }
   if (!state.lootV2){
     state.lootV2 = 1;
     var REPRICE = { "One hour of guilt-free gaming": 250, "Order your favourite snack": 400, "Movie night": 800, "A small treat under ₹500": 600 };
@@ -1081,7 +1254,6 @@
     idbWrite(json);
     setBadge(ok ? "\u2713 Saved on this device" : "\u26a0 Main store failed \u2014 backup copy written. Export soon!", ok ? "ok" : "warn");
   }
-  saveNow();
 
   // ---------- core game actions ----------
   function addLog(msg){
@@ -1226,7 +1398,10 @@
   function runSlog(){ var q = state.quests.find(function(x){ return x.id === "w-run"; }); return (q && q.slog) || []; }
   function maxPull(){
     var q = state.quests.find(function(x){ return x.id === "w-gym"; }), mx = 0;
-    ((q && q.slog) || []).forEach(function(e){ (e.lifts || []).forEach(function(l){ if (/dead/i.test(l.name) && l.kg > mx) mx = l.kg; }); });
+    ((q && q.slog) || []).forEach(function(e){ (e.lifts || []).forEach(function(l){
+      if (!/dead/i.test(l.name || "")) return;
+      setsOf(l).forEach(function(s){ if (s[0] > mx) mx = s[0]; });
+    }); });
     return mx;
   }
   function arcBooks(){
@@ -1536,13 +1711,111 @@
       '<input type="text" class="m-what" placeholder="What did you eat?" maxlength="120" style="flex:2" aria-label="What you ate">' +
       "</div>";
   }
-  function liftRowHtml(){
-    return '<div class="liftrow">' +
-      '<input type="text" class="l-name" placeholder="Exercise" maxlength="40" aria-label="Exercise name">' +
-      '<input type="number" class="l-kg" placeholder="kg" min="0" max="600" step="0.5" aria-label="Weight in kg">' +
-      '<input type="number" class="l-reps" placeholder="reps" min="1" max="100" aria-label="Reps">' +
-      '<input type="number" class="l-sets" placeholder="sets" min="1" max="20" aria-label="Sets">' +
+  // ---------- iron: per-set logging (Strong/Hevy style) ----------
+  function setsOf(l){
+    if (Array.isArray(l.sets)) return l.sets;
+    var n = Math.max(1, l.sets || 1), out = [];
+    for (var i = 0; i < n; i++) out.push([l.kg || 0, l.reps || 0]);
+    return out;
+  }
+  function liftVol(l){ return setsOf(l).reduce(function(a, s){ return a + (s[0] || 0) * (s[1] || 0); }, 0); }
+  function est1RM(kg, reps){ return reps > 0 && kg > 0 ? Math.round(kg * (1 + reps / 30) * 10) / 10 : kg || 0; }
+  function gymSlog(){ var q = state.quests.find(function(x){ return x.id === "w-gym"; }); return (q && q.slog) || []; }
+  function exNames(){
+    var seen = {};
+    gymSlog().forEach(function(e){ (e.lifts || []).forEach(function(l){ if (l.name) seen[l.name.trim()] = 1; }); });
+    return Object.keys(seen).sort();
+  }
+  function exBest(name){
+    var kg = 0, orm = 0, when = "";
+    var nm = (name || "").trim().toLowerCase();
+    gymSlog().forEach(function(e){
+      (e.lifts || []).forEach(function(l){
+        if ((l.name || "").trim().toLowerCase() !== nm) return;
+        setsOf(l).forEach(function(s){
+          if (s[0] > kg){ kg = s[0]; when = e.t; }
+          var o = est1RM(s[0], s[1]);
+          if (o > orm) orm = o;
+        });
+      });
+    });
+    return { kg: kg, orm: orm, when: when };
+  }
+  function exLast(name){
+    var nm = (name || "").trim().toLowerCase();
+    for (var i = 0; i < gymSlog().length; i++){
+      var l = (gymSlog()[i].lifts || []).find(function(x){ return (x.name || "").trim().toLowerCase() === nm; });
+      if (l) return { t: gymSlog()[i].t, sets: setsOf(l) };
+    }
+    return null;
+  }
+  function fmtSets(sets){
+    return sets.map(function(s){ return s[0] > 0 ? s[0] + "×" + s[1] : "×" + s[1]; }).join(", ");
+  }
+  function setRowHtml(n, kg, reps){
+    return '<div class="setrow"><span class="setno">' + n + '</span>' +
+      '<input type="number" class="s-kg" placeholder="kg" min="0" max="600" step="0.5" value="' + (kg === 0 ? "" : (kg || "")) + '" aria-label="Weight in kg">' +
+      '<span class="setx">×</span>' +
+      '<input type="number" class="s-reps" placeholder="reps" min="1" max="100" value="' + (reps || "") + '" aria-label="Reps">' +
+      '<button type="button" class="qdel" data-mact="delset" aria-label="Remove set">✕</button></div>';
+  }
+  function exBlockHtml(name, sets){
+    if (!sets || !sets.length) sets = [["", ""]];
+    var rows = sets.map(function(s, i){ return setRowHtml(i + 1, s[0], s[1]); }).join("");
+    return '<div class="exblock">' +
+      '<div style="display:flex;gap:6px;align-items:center">' +
+      '<input type="text" class="lx-name" list="exlist" placeholder="Exercise" maxlength="40" value="' + esc(String(name || "")) + '" aria-label="Exercise name" style="flex:1;min-width:0">' +
+      '<button type="button" class="qdel" data-mact="delex" aria-label="Remove exercise">✕</button></div>' +
+      '<div class="exhint"></div>' +
+      '<div class="setlist">' + rows + "</div>" +
+      '<button type="button" class="btn-ghost" data-mact="addset" style="padding:4px 10px;font-size:12px;margin-top:6px">＋ Set</button>' +
       "</div>";
+  }
+  function exHintFor(name){
+    if (!name || !name.trim()) return "";
+    var last = exLast(name), best = exBest(name);
+    if (!last) return "First time — set the baseline.";
+    return "Last (" + last.t.slice(5) + "): " + fmtSets(last.sets) +
+      (best.kg > 0 ? " · best " + best.kg + " kg · est 1RM " + best.orm : "");
+  }
+  function refreshExHints(root){
+    (root || document).querySelectorAll(".exblock").forEach(function(b){
+      var h = b.querySelector(".exhint");
+      if (h) h.textContent = exHintFor(b.querySelector(".lx-name").value);
+    });
+  }
+  function renumberSets(block){
+    var i = 1;
+    block.querySelectorAll(".setno").forEach(function(s){ s.textContent = i++; });
+  }
+  function collectLifts(rootSel){
+    var lifts = [];
+    document.querySelectorAll(rootSel + " .exblock").forEach(function(b){
+      var name = b.querySelector(".lx-name").value.trim();
+      if (!name) return;
+      var sets = [];
+      b.querySelectorAll(".setrow").forEach(function(r){
+        var kg = Number(r.querySelector(".s-kg").value) || 0;
+        var reps = Number(r.querySelector(".s-reps").value) || 0;
+        if (reps > 0) sets.push([Math.round(kg * 2) / 2, reps]);
+      });
+      if (sets.length) lifts.push({ name: name, sets: sets });
+    });
+    return lifts;
+  }
+  function exListHtml(){
+    return '<datalist id="exlist">' + exNames().map(function(n){ return '<option value="' + esc(n) + '">'; }).join("") + "</datalist>";
+  }
+  var gymEditIdx = null, exBookSel = null;
+  function gymEditFormHtml(e){
+    return '<div style="border:1px solid var(--gold);border-radius:10px;padding:10px;text-align:left">' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap"><label class="hintlbl" for="ge-min">Minutes</label>' +
+      '<input type="number" id="ge-min" value="' + e.min + '" min="5" max="300" class="stepin" style="width:76px">' +
+      '<span class="hintlbl">re-forging ' + esc(e.t) + "</span></div>" +
+      '<div id="gedit-rows">' + ((e.lifts && e.lifts.length) ? e.lifts.map(function(l){ return exBlockHtml(l.name, setsOf(l)); }).join("") : exBlockHtml()) + "</div>" +
+      '<button type="button" class="btn-ghost" data-mact="addlift2" style="padding:5px 12px;font-size:13px">＋ Add exercise</button>' +
+      '<div class="erow2" style="margin-top:10px"><button class="btn btn-sm" data-gsave="1" type="button">Save changes</button>' +
+      '<button class="btn-ghost" data-gcancel="1" type="button" style="padding:6px 12px">Cancel</button></div></div>';
   }
   function paceStr(mn, km){
     if (!km) return "—";
@@ -1601,6 +1874,10 @@
           fld('<label for="m-km">Distance (km)</label><input type="number" id="m-km" value="' + (isRun ? 5 : 15) + '" min="0.5" max="500" step="0.1">') +
           fld('<label for="m-min">Time (minutes)</label><input type="number" id="m-min" value="' + (isRun ? 30 : 45) + '" min="5" max="600">') +
           "</div>" +
+          (isRun ? '<div class="mgrid">' +
+            fld('<label for="m-hr">Avg heart rate (bpm, from watch)</label><input type="number" id="m-hr" min="60" max="220" placeholder="optional">') +
+            fld('<label for="m-cad">Cadence (steps/min, from watch)</label><input type="number" id="m-cad" min="100" max="230" placeholder="optional">') +
+            "</div>" : "") +
           selFld("m-a2", "How did it feel?", [["3","Hard"],["4","All-out"],["2","Steady"],["1","Easy " + (isRun ? "jog" : "spin")]]) +
           painFields();
       },
@@ -1616,7 +1893,21 @@
         var pc = paceStr(mn, km);
         q.slog = q.slog || [];
         var entry = { t: todayStr(), km: km, min: mn, pace: pc, speed: spd };
-        if (isRun) entry.type = val("m-rtype");
+        if (isRun){
+          entry.type = val("m-rtype");
+          var hr = Math.round(Number(val("m-hr")) || 0);
+          var cad = Math.round(Number(val("m-cad")) || 0);
+          if (hr) entry.hr = hr;
+          if (cad) entry.cad = cad;
+          if (hr && entry.type === "easy"){
+            var ez = state.quests.find(function(x){ return x.id === "w-run"; });
+            var easyHRs = ((ez && ez.slog) || []).filter(function(s){ return s.type === "easy" && s.hr; }).map(function(s){ return s.hr; });
+            if (easyHRs.length >= 2){
+              var avgEz = easyHRs.reduce(function(a, b){ return a + b; }, 0) / easyHRs.length;
+              if (hr > avgEz + 8) toast("That easy run's heart rate ran " + Math.round(hr - avgEz) + " bpm above your usual — slow the easy days down; they build the engine.");
+            }
+          }
+        }
         q.slog.unshift(entry);
         if (q.slog.length > 40) q.slog.length = 40;
         addLog((isRun ? (entry.type === "long" ? "Long run: <b>" : entry.type === "quality" ? "Quality run: <b>" : "Ran <b>") : "Rode <b>") +
@@ -1633,36 +1924,38 @@
           fld('<label for="m-min">Minutes trained</label><input type="number" id="m-min" value="60" min="5" max="300">') +
           selFld("m-a2", "Intensity", [["3","Hard"],["4","All-out"],["2","Solid"],["1","Light"]]) +
           "</div>" +
-          fld('<label>The lifts — exercise, weight, reps, sets</label><div id="lift-rows">' +
-            liftRowHtml() + liftRowHtml() + liftRowHtml() + "</div>" +
-            '<button type="button" class="btn-ghost" data-mact="addlift" style="padding:5px 12px;font-size:13px">＋ Add exercise</button>') +
+          fld('<label>The lifts — set by set. Start typing a name to see your last session and record.</label>' +
+            '<div id="lift-rows">' + exBlockHtml() + "</div>" +
+            '<button type="button" class="btn-ghost" data-mact="addlift" style="padding:5px 12px;font-size:13px">＋ Add exercise</button>' +
+            exListHtml()) +
           painFields();
       },
       score: function(){
-        var n = this._collect().length;
-        return clampS(Math.min(3, num("m-min") / 45 * 3) + Number(val("m-a2")) + (n >= 4 ? 3 : n >= 2 ? 2 : n >= 1 ? 1 : 0));
+        var lifts = this._collect();
+        var nsets = lifts.reduce(function(a, l){ return a + l.sets.length; }, 0);
+        return clampS(Math.min(3, num("m-min") / 45 * 3) + Number(val("m-a2")) + (nsets >= 12 ? 3 : nsets >= 6 ? 2 : nsets >= 1 ? 1 : 0));
       },
-      _collect: function(){
-        var lifts = [];
-        document.querySelectorAll("#lift-rows .liftrow").forEach(function(row){
-          var name = row.querySelector(".l-name").value.trim();
-          if (!name) return;
-          lifts.push({
-            name: name,
-            kg: Number(row.querySelector(".l-kg").value) || 0,
-            reps: Number(row.querySelector(".l-reps").value) || 0,
-            sets: Number(row.querySelector(".l-sets").value) || 1
-          });
-        });
-        return lifts;
-      },
+      _collect: function(){ return collectLifts("#lift-rows"); },
       commit: function(){
         var lifts = this._collect(), mn = num("m-min");
+        var prs = [];
+        lifts.forEach(function(l){
+          var best = exBest(l.name);
+          var topKg = Math.max.apply(null, l.sets.map(function(s){ return s[0]; }).concat([0]));
+          var topOrm = Math.max.apply(null, l.sets.map(function(s){ return est1RM(s[0], s[1]); }).concat([0]));
+          if (topKg > 0 && (topKg > best.kg || topOrm > best.orm)) prs.push(l.name + " " + topKg + " kg");
+        });
+        var vol = Math.round(lifts.reduce(function(a, l){ return a + liftVol(l); }, 0));
         q.slog = q.slog || [];
-        q.slog.unshift({ t: todayStr(), min: mn, lifts: lifts });
-        if (q.slog.length > 40) q.slog.length = 40;
-        var summary = lifts.slice(0, 3).map(function(l){ return esc(l.name) + (l.kg > 0 ? " " + l.kg + "kg" : "") + "×" + l.reps; }).join(", ");
-        addLog("Forged iron " + mn + " min" + (summary ? ": <b>" + summary + (lifts.length > 3 ? " +" + (lifts.length - 3) + " more" : "") + "</b>" : ""));
+        q.slog.unshift({ t: todayStr(), min: mn, lifts: lifts, vol: vol });
+        if (q.slog.length > 60) q.slog.length = 60;
+        var summary = lifts.slice(0, 3).map(function(l){ return esc(l.name) + " " + fmtSets(l.sets.slice(0, 3)) + (l.sets.length > 3 ? "…" : ""); }).join(" · ");
+        addLog("Forged iron " + mn + " min · <b>" + vol.toLocaleString() + " kg moved</b>" + (summary ? " — " + summary + (lifts.length > 3 ? " +" + (lifts.length - 3) + " more" : "") : ""));
+        if (prs.length){
+          award("fit", 10 * prs.length);
+          addLog("🏆 <b>New record:</b> " + esc(prs.join(", ")) + " <b>+" + 10 * prs.length + " XP</b>");
+          toast("🏆 NEW RECORD — " + esc(prs[0]) + (prs.length > 1 ? " +" + (prs.length - 1) + " more" : "") + " · +" + 10 * prs.length + " XP", true);
+        }
         painCommit("Forge");
       }
     };
@@ -1955,6 +2248,8 @@
             fld('<label for="m-wake">Woke up</label><input type="time" id="m-wake" value="07:00">') +
             selFld("m-qual", "How was the sleep?", [["Good","Good"],["Excellent","Excellent"],["Okay","Okay"],["Poor","Poor"],["Terrible","Terrible"]]) +
             fld('<label for="m-wakes">Times you woke up</label><input type="number" id="m-wakes" value="0" min="0" max="20">') +
+            fld('<label for="m-deep">Deep sleep (h, from watch)</label><input type="number" id="m-deep" min="0" max="8" step="0.1" placeholder="optional">') +
+            fld('<label for="m-rem">REM sleep (h, from watch)</label><input type="number" id="m-rem" min="0" max="8" step="0.1" placeholder="optional">') +
             "</div>";
         },
         score: function(){
@@ -1968,9 +2263,15 @@
         },
         commit: function(){
           var wakes = Math.max(0, num("m-wakes"));
-          state.sleep.unshift({ t: todayStr(), bed: val("m-bed") || "23:00", wake: val("m-wake") || "07:00",
-            hours: this._hours, quality: val("m-qual"), wakeups: wakes });
-          addLog("Slept <b>" + this._hours + "h</b> (" + val("m-qual").toLowerCase() + ", woke " + wakes + "×)");
+          var deep = Math.round((Number(val("m-deep")) || 0) * 10) / 10;
+          var rem = Math.round((Number(val("m-rem")) || 0) * 10) / 10;
+          var entry = { t: todayStr(), bed: val("m-bed") || "23:00", wake: val("m-wake") || "07:00",
+            hours: this._hours, quality: val("m-qual"), wakeups: wakes };
+          if (deep) entry.deep = deep;
+          if (rem) entry.rem = rem;
+          state.sleep.unshift(entry);
+          addLog("Slept <b>" + this._hours + "h</b> (" + val("m-qual").toLowerCase() + ", woke " + wakes + "×" +
+            (deep ? ", deep " + deep + "h" : "") + (rem ? ", REM " + rem + "h" : "") + ")");
         }
       };
       case "d-med": return {
@@ -2249,6 +2550,19 @@
     }, 1000);
   });
   function closeModal(){ qmodal.hidden = true; modalQuest = null; modalAssess = null; stopTimer(false); }
+  document.addEventListener("change", function(e){
+    if (e.target && e.target.id === "exbook-sel"){
+      exBookSel = e.target.value;
+      renderRecords();
+    }
+  });
+  document.addEventListener("input", function(e){
+    if (e.target.matches && e.target.matches(".lx-name")){
+      var b = e.target.closest(".exblock");
+      var h = b && b.querySelector(".exhint");
+      if (h) h.textContent = exHintFor(e.target.value);
+    }
+  });
 
   document.getElementById("m-save").addEventListener("click", function(){
     if (!modalQuest) return;
@@ -2469,6 +2783,7 @@
         '<div class="qbody"><div class="qtitle">' + esc(q.title) + '</div><div class="qmeta">' + meta + "</div></div>" +
         '<input type="number" class="stepin" id="cnt-' + q.id + '" value="' + tv + '" min="0" placeholder="' + q.unit + '" aria-label="Log ' + q.unit + '">' +
         '<input type="number" class="stepin" id="wmin-' + q.id + '" value="' + ((q.tlog && q.tlog[vd]) || "") + '" min="0" max="1440" placeholder="min" title="Minutes spent walking (optional)" aria-label="Minutes walked" style="width:64px">' +
+        '<input type="number" class="stepin" id="kcal-' + q.id + '" value="' + ((q.klog && q.klog[vd]) || "") + '" min="0" max="9999" placeholder="kcal" title="Active calories from the watch (optional)" aria-label="Active calories" style="width:64px">' +
         '<button class="btn btn-sm" data-act="logcnt" data-id="' + q.id + '" type="button">Log</button>' +
         questTail(q) + "</div>";
     }
@@ -2500,10 +2815,19 @@
       '<div class="qbody"><div class="qtitle">' + esc(q.title) + '</div><div class="qmeta">' + meta + "</div></div>" +
       questTail(q) + "</div>";
   }
+  var AREA_ORDER = { fit: 0, lrn: 1, gld: 2, hab: 3 };
+  function byStat(list){
+    return list.map(function(q, i){ return [q, i]; })
+      .sort(function(a, b){
+        var d = (AREA_ORDER[a[0].area] || 0) - (AREA_ORDER[b[0].area] || 0);
+        return d !== 0 ? d : a[1] - b[1];
+      })
+      .map(function(p){ return p[0]; });
+  }
   function renderQuests(){
-    var daily = state.quests.filter(function(q){ return q.type === "daily"; });
-    var weekly = state.quests.filter(function(q){ return q.type === "weekly"; });
-    var side = state.quests.filter(function(q){ return q.type === "side"; });
+    var daily = byStat(state.quests.filter(function(q){ return q.type === "daily"; }));
+    var weekly = byStat(state.quests.filter(function(q){ return q.type === "weekly"; }));
+    var side = byStat(state.quests.filter(function(q){ return q.type === "side"; }));
     document.getElementById("daily-list").innerHTML =
       daily.length ? daily.map(questRow).join("") : '<div class="empty">No daily quests. Post one below.</div>';
     document.getElementById("weekly-list").innerHTML =
@@ -2677,7 +3001,7 @@
     }
     if (gymQ){
       var gv = (gymQ.slog || []).slice(0, 15).reverse().map(function(e){
-        var vol = (e.lifts || []).reduce(function(a, l){ return a + l.kg * l.reps * (l.sets || 1); }, 0);
+        var vol = e.vol != null ? e.vol : Math.round((e.lifts || []).reduce(function(a, l){ return a + liftVol(l); }, 0));
         return { l: e.t.slice(5), v: vol, tip: vol.toLocaleString() + " kg total volume" };
       });
       cards.push(chartCard("Iron volume · kg lifted per session", gv.length ? gv[gv.length - 1].v.toLocaleString() + " kg" : "", chartSVG(gv, { color: "#e56a4e", label: "Gym volume" })));
@@ -2694,7 +3018,7 @@
     }
     if (state.body.length){
       var bw = state.body.slice(0, 21).reverse().map(function(e){
-        return { l: e.t.slice(5), v: e.kg, tip: e.kg + " kg" + (e.waist ? " · waist " + e.waist + " cm" : "") };
+        return { l: e.t.slice(5), v: e.kg, tip: e.kg + " kg" + (e.waist ? " · waist " + e.waist + " in" : "") };
       });
       cards.push(chartCard("Weight · kg (line at " + state.goals.weightTarget + ")", bw[bw.length - 1].v + " kg",
         chartSVG(bw, { color: "#6f9edb", ref: state.goals.weightTarget, label: "Body weight" })));
@@ -2758,7 +3082,10 @@
     var gymQ = state.quests.find(function(x){ return x.id === "w-gym"; });
     var pulls = [];
     (gymQ && gymQ.slog || []).forEach(function(e){
-      (e.lifts || []).forEach(function(l){ if (/dead/i.test(l.name)) pulls.push(l.kg); });
+      (e.lifts || []).forEach(function(l){
+        if (!/dead/i.test(l.name || "")) return;
+        setsOf(l).forEach(function(s){ if (s[0] > 0) pulls.push(s[0]); });
+      });
     });
     if (pulls.length){
       var mx = Math.max.apply(null, pulls), first = pulls[pulls.length - 1];
@@ -2974,14 +3301,16 @@
       if (state.arc && d < state.arc.start && i > 0) break;
       var st = (stepsQ && stepsQ.log && stepsQ.log[d]) || 0;
       var wm = (stepsQ && stepsQ.tlog && stepsQ.tlog[d]) || 0;
+      var kc = (stepsQ && stepsQ.klog && stepsQ.klog[d]) || 0;
       var sl = state.sleep.find(function(e){ return e.t === d; });
       var mo = state.moods.find(function(e){ return e.t === d; });
       var rf = state.reframes.filter(function(e){ return e.t === d; }).length;
       var xp = state.xpDaily[d];
-      if (!st && !wm && !sl && !mo && !rf && xp == null && i > 0) continue;
+      if (!st && !wm && !kc && !sl && !mo && !rf && xp == null && i > 0) continue;
       rows.push("<tr><td>" + esc(d.slice(5)) + "</td>" +
         "<td>" + (st ? "<b>" + st.toLocaleString() + "</b>" : "—") + "</td>" +
         "<td>" + walkFmt(wm) + "</td>" +
+        "<td>" + (kc ? kc.toLocaleString() : "—") + "</td>" +
         "<td>" + (sl ? "<b>" + sl.hours + "h</b>" : "—") + "</td>" +
         "<td" + (sl ? ' class="qual-' + esc(sl.quality) + '"' : "") + ">" + (sl ? esc(sl.quality) : "—") + "</td>" +
         "<td>" + (sl ? sl.wakeups + "×" : "—") + "</td>" +
@@ -2989,8 +3318,8 @@
         "<td>" + (rf || "—") + "</td>" +
         "<td>" + (xp != null ? (xp > 0 ? "+" : "") + xp : "—") + "</td></tr>");
     }
-    el.innerHTML = "<tr><th>Date</th><th>Steps</th><th>Walked</th><th>Slept</th><th>Quality</th><th>Wakings</th><th>Spirit</th><th>Reframes</th><th>XP</th></tr>" +
-      (rows.length ? rows.join("") : '<tr><td colspan="9"><i>The sheet fills as the days are logged.</i></td></tr>');
+    el.innerHTML = "<tr><th>Date</th><th>Steps</th><th>Walked</th><th>Burn</th><th>Slept</th><th>Quality</th><th>Wakings</th><th>Spirit</th><th>Reframes</th><th>XP</th></tr>" +
+      (rows.length ? rows.join("") : '<tr><td colspan="10"><i>The sheet fills as the days are logged.</i></td></tr>');
   }
   function renderRecords(){
     renderDaySheet();
@@ -3020,12 +3349,14 @@
     function slogOf(id){ var q = state.quests.find(function(x){ return x.id === id; }); return (q && q.slog) || []; }
     function sportTable(id, elId, speedLabel){
       var rows = slogOf(id).slice(0, 14);
+      var isRun = id === "w-run";
       document.getElementById(elId).innerHTML =
-        "<tr><th>Date</th><th>Type</th><th>Km</th><th>Time</th><th>Pace</th><th>" + speedLabel + "</th></tr>" +
+        "<tr><th>Date</th><th>Type</th><th>Km</th><th>Time</th><th>Pace</th><th>" + speedLabel + "</th>" + (isRun ? "<th>HR</th><th>Cad</th>" : "") + "</tr>" +
         (rows.length ? rows.map(function(e){
           return "<tr><td>" + esc(e.t.slice(5)) + "</td><td>" + (e.type ? esc(e.type) : "—") + "</td><td><b>" + e.km + "</b></td><td>" + e.min + " min</td><td>" +
-            esc(e.pace) + " /km</td><td>" + e.speed + " km/h</td></tr>";
-        }).join("") : '<tr><td colspan="6"><i>Nothing logged yet.</i></td></tr>');
+            esc(e.pace) + " /km</td><td>" + e.speed + " km/h</td>" +
+            (isRun ? "<td>" + (e.hr || "—") + "</td><td>" + (e.cad || "—") + "</td>" : "") + "</tr>";
+        }).join("") : '<tr><td colspan="' + (isRun ? 8 : 6) + '"><i>Nothing logged yet.</i></td></tr>');
     }
     var pains = state.niggles.slice(0, 14);
     document.getElementById("pain-table").innerHTML =
@@ -3038,26 +3369,90 @@
     sportTable("w-cycle", "ride-table", "Speed");
     var gymRows = slogOf("w-gym").slice(0, 14);
     document.getElementById("gym-table").innerHTML =
-      "<tr><th>Date</th><th>Time</th><th>Lifts</th></tr>" +
-      (gymRows.length ? gymRows.map(function(e){
+      "<tr><th>Date</th><th>Time</th><th>Volume</th><th>The work</th><th></th></tr>" +
+      (gymRows.length ? gymRows.map(function(e, gi){
+        var vol = e.vol != null ? e.vol : Math.round((e.lifts || []).reduce(function(a, l){ return a + liftVol(l); }, 0));
         var lifts = (e.lifts || []).map(function(l){
-          return esc(l.name) + (l.kg > 0 ? " " + l.kg + "kg" : "") + " × " + l.reps + (l.sets > 1 ? " × " + l.sets : "");
-        }).join(", ");
-        return "<tr><td>" + esc(e.t.slice(5)) + "</td><td>" + e.min + " min</td><td><b>" + (lifts || "—") + "</b></td></tr>";
-      }).join("") : '<tr><td colspan="3"><i>No iron moved yet.</i></td></tr>');
+          return "<b>" + esc(l.name) + "</b> " + fmtSets(setsOf(l));
+        }).join("<br>");
+        return "<tr><td>" + esc(e.t.slice(5)) + "</td><td>" + e.min + " min</td><td><b>" + vol.toLocaleString() + "</b> kg</td>" +
+          "<td>" + (lifts || "—") + "</td>" +
+          '<td><button class="qedit" data-gedit="' + gi + '" aria-label="Edit this session">✎</button></td></tr>' +
+          (gymEditIdx === gi ? '<tr><td colspan="5">' + gymEditFormHtml(e) + "</td></tr>" : "");
+      }).join("") : '<tr><td colspan="5"><i>No iron moved yet.</i></td></tr>');
+    var ebSel = document.getElementById("exbook-sel");
+    if (ebSel){
+      var names = exNames();
+      if (exBookSel && names.indexOf(exBookSel) === -1) exBookSel = null;
+      if (!exBookSel && names.length) exBookSel = names[0];
+      ebSel.innerHTML = names.length
+        ? names.map(function(n){ return '<option value="' + esc(n) + '"' + (n === exBookSel ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("")
+        : "<option>— no lifts logged yet —</option>";
+      var ebBest = document.getElementById("exbook-best");
+      var ebT = document.getElementById("exbook-table");
+      if (exBookSel){
+        var B = exBest(exBookSel);
+        ebBest.innerHTML = B.kg > 0
+          ? "Standing record: <b style='color:var(--gold-hi)'>" + B.kg + " kg</b> · est 1RM <b>" + B.orm + "</b>" + (B.when ? " · set on " + esc(B.when) : "")
+          : "Bodyweight so far — records begin when the plates go on.";
+        var hist = [];
+        gymSlog().forEach(function(e2){
+          var l = (e2.lifts || []).find(function(x){ return (x.name || "").trim().toLowerCase() === exBookSel.trim().toLowerCase(); });
+          if (l) hist.push({ t: e2.t, sets: setsOf(l) });
+        });
+        ebT.innerHTML = "<tr><th>Date</th><th>Sets</th><th>Top set</th><th>Est 1RM</th><th>Volume</th></tr>" +
+          (hist.length ? hist.map(function(h){
+            var top = h.sets.reduce(function(a, s){ return s[0] > a[0] ? s : a; }, [0, 0]);
+            var orm = Math.max.apply(null, h.sets.map(function(s){ return est1RM(s[0], s[1]); }).concat([0]));
+            var v = h.sets.reduce(function(a, s){ return a + s[0] * s[1]; }, 0);
+            return "<tr><td>" + esc(h.t.slice(5)) + "</td><td>" + fmtSets(h.sets) + "</td><td><b>" +
+              (top[0] > 0 ? top[0] + "×" + top[1] : "—") + "</b></td><td>" + (orm || "—") + "</td><td>" + Math.round(v).toLocaleString() + " kg</td></tr>";
+          }).join("") : '<tr><td colspan="5"><i>Nothing yet.</i></td></tr>');
+      } else {
+        ebBest.textContent = "";
+        ebT.innerHTML = "";
+      }
+    }
     var body = state.body.slice(0, 14);
     document.getElementById("body-table").innerHTML =
-      "<tr><th>Date</th><th>Weight</th><th>From start</th><th>To target</th><th>Waist</th><th>Chest</th><th>Hips</th><th>Arm</th><th>Thigh</th></tr>" +
+      "<tr><th>Date</th><th>Weight</th><th>BMI</th><th>From start</th><th>To target</th><th>Neck</th><th>Waist</th><th>Chest</th><th>Stomach</th><th>Hips</th><th>Arms L/R</th><th>Thighs L/R</th><th>Calves L/R</th></tr>" +
       (body.length ? body.map(function(e){
         var lost = Math.round((state.goals.weightStart - e.kg) * 10) / 10;
         var togo = Math.round((e.kg - state.goals.weightTarget) * 10) / 10;
         var M = e.meas || {};
         function cm(v){ return v ? v + "" : "—"; }
+        function pair(l, r, legacy){
+          if (l || r) return (l || "—") + " / " + (r || "—");
+          return legacy ? legacy + "" : "—";
+        }
         return "<tr><td>" + esc(e.t.slice(5)) + "</td><td><b>" + e.kg + " kg</b></td>" +
+          "<td>" + bmiOf(e.kg) + "</td>" +
           "<td>" + (lost > 0 ? "−" + lost : lost < 0 ? "+" + (-lost) : "±0") + " kg</td>" +
           "<td>" + (togo > 0 ? togo + " kg" : "<b>done</b>") + "</td>" +
-          "<td>" + (e.waist ? e.waist + "" : "—") + "</td><td>" + cm(M.chest) + "</td><td>" + cm(M.hips) + "</td><td>" + cm(M.arm) + "</td><td>" + cm(M.thigh) + "</td></tr>";
-      }).join("") : '<tr><td colspan="9"><i>First weigh-in sets the story in motion.</i></td></tr>');
+          "<td>" + cm(M.neck) + "</td><td>" + (e.waist ? e.waist + "" : "—") + "</td><td>" + cm(M.chest) + "</td><td>" + cm(M.stomach) + "</td><td>" + cm(M.hips) + "</td>" +
+          "<td>" + pair(M.armL, M.armR, M.arm) + "</td><td>" + pair(M.thighL, M.thighR, M.thigh) + "</td><td>" + pair(M.calfL, M.calfR, null) + "</td></tr>";
+      }).join("") : '<tr><td colspan="13"><i>First weigh-in sets the story in motion.</i></td></tr>');
+    var vit = state.body.filter(function(e){ return e.vitals && (e.vitals.hrv || e.vitals.rhr || e.vitals.vo2 || e.vitals.rec); }).slice(0, 14);
+    var vtEl = document.getElementById("vitals-table");
+    if (vtEl){
+      function vd(cur, prevArr, idx, key, goodDown){
+        var v = cur.vitals[key];
+        if (!v) return "<td>—</td><td>—</td>";
+        var prev = null;
+        for (var j = idx + 1; j < prevArr.length; j++){ if (prevArr[j].vitals[key]){ prev = prevArr[j].vitals[key]; break; } }
+        if (prev == null) return "<td><b>" + v + "</b></td><td>—</td>";
+        var d = Math.round((v - prev) * 10) / 10;
+        var good = goodDown ? d < 0 : d > 0;
+        var cls = d === 0 ? "" : good ? ' class="gap-under"' : ' class="gap-over"';
+        return "<td><b>" + v + "</b></td><td" + cls + ">" + (d > 0 ? "+" + d : d === 0 ? "±0" : d + "") + "</td>";
+      }
+      vtEl.innerHTML = "<tr><th>Date</th><th>HRV</th><th>Δ</th><th>RHR</th><th>Δ</th><th>VO₂</th><th>Δ</th><th>RecHR</th><th>Δ</th></tr>" +
+        (vit.length ? vit.map(function(e, i){
+          return "<tr><td>" + esc(e.t.slice(5)) + "</td>" + vd(e, vit, i, "hrv", false) + vd(e, vit, i, "rhr", true) + vd(e, vit, i, "vo2", false) + vd(e, vit, i, "rec", false) + "</tr>";
+        }).join("") : '<tr><td colspan="9"><i>Log HRV, resting HR, VO₂ max and recovery HR in the weekly check-in.</i></td></tr>');
+      var viEl = document.getElementById("vitals-insight");
+      if (viEl) viEl.innerHTML = vitalsInsight(vit);
+    }
     var spendDays = (state.spends || []).slice(0, 21);
     document.getElementById("spend-table").innerHTML =
       "<tr><th>Date</th><th>Total</th><th>Spends</th></tr>" +
@@ -3087,11 +3482,34 @@
       }).join("") : '<tr><td colspan="2"><i>Log meals in the Clean Feast debrief.</i></td></tr>');
     var s = state.sleep.slice(0, 14);
     document.getElementById("sleep-table").innerHTML =
-      "<tr><th>Date</th><th>Bed</th><th>Wake</th><th>Hours</th><th>Quality</th><th>Wakings</th></tr>" +
+      "<tr><th>Date</th><th>Bed</th><th>Wake</th><th>Hours</th><th>Deep</th><th>REM</th><th>Quality</th><th>Wakings</th></tr>" +
       (s.length ? s.map(function(e){
         return "<tr><td>" + esc(e.t) + "</td><td>" + esc(e.bed) + "</td><td>" + esc(e.wake) + "</td><td><b>" + e.hours + "h</b></td>" +
+          "<td>" + (e.deep ? e.deep + "h" : "—") + "</td><td>" + (e.rem ? e.rem + "h" : "—") + "</td>" +
           '<td class="qual-' + esc(e.quality) + '">' + esc(e.quality) + "</td><td>" + e.wakeups + "×</td></tr>";
-      }).join("") : '<tr><td colspan="6"><i>No nights logged yet.</i></td></tr>');
+      }).join("") : '<tr><td colspan="8"><i>No nights logged yet.</i></td></tr>');
+    var emEl = document.getElementById("ember-table");
+    if (emEl){
+      var byDay = {};
+      (state.embers || []).forEach(function(e){ (byDay[e.t] = byDay[e.t] || []).push(e); });
+      var emDays = Object.keys(byDay).sort().reverse().slice(0, 21);
+      emEl.innerHTML = "<tr><th>Date</th><th>Count</th><th>XP lost</th><th>When</th></tr>" +
+        (emDays.length ? emDays.map(function(d){
+          var es = byDay[d];
+          var lost = es.reduce(function(a, e){ return a + e.xp; }, 0);
+          var times = es.map(function(e){ return e.at; }).sort().join(", ");
+          return "<tr><td>" + esc(d.slice(5)) + "</td><td><b>" + es.length + "</b></td><td class=\"gap-over\">−" + lost + "</td><td>" + esc(times) + "</td></tr>";
+        }).join("") : '<tr><td colspan="4"><i>Nothing burned yet. Keep it that way.</i></td></tr>');
+      var emN = document.getElementById("ember-note");
+      if (emN){
+        var clean = emberCleanStreak();
+        var totalN = (state.embers || []).length;
+        var totalXP = (state.embers || []).reduce(function(a, e){ return a + e.xp; }, 0);
+        emN.textContent = totalN
+          ? totalN + " total · −" + totalXP + " XP" + (clean === 0 ? " · burned today" : clean === 1 ? " · clean today" : " · " + clean + " days unlit")
+          : "The ledger is empty — the ember has never won.";
+      }
+    }
 
     function histRows(q, fmt){
       if (!q || !q.log) return "";
@@ -3115,9 +3533,9 @@
     document.getElementById("log-list").innerHTML = html || '<div class="empty">Your story begins today.</div>';
   }
   function renderAll(){
-    renderHeader(); renderStats(); renderSpirit(); renderReframes(); renderPurse(); renderBell(); renderQuests(); renderRewards(); renderVictory();
+    renderHeader(); renderStats(); renderSpirit(); renderReframes(); renderPurse(); renderEmber(); renderBell(); renderQuests(); renderRewards(); renderVictory();
     renderBoss(); renderTrophies(); renderOmens();
-    renderBooks(); renderJournals(); renderCheckins(); renderRecords(); renderLog();
+    renderBooks(); renderJournals(); renderTransform(); renderCheckins(); renderRecords(); renderLog();
   }
 
   // ---------- backfill mode (any past date) ----------
@@ -3178,10 +3596,55 @@
     var ml = e.target.closest("[data-mact]");
     if (ml){
       if (ml.dataset.mact === "addlift"){
-        document.getElementById("lift-rows").insertAdjacentHTML("beforeend", liftRowHtml());
+        document.getElementById("lift-rows").insertAdjacentHTML("beforeend", exBlockHtml());
+      } else if (ml.dataset.mact === "addlift2"){
+        document.getElementById("gedit-rows").insertAdjacentHTML("beforeend", exBlockHtml());
       } else if (ml.dataset.mact === "addmeal"){
         document.getElementById("meal-rows").insertAdjacentHTML("beforeend", mealRowHtml(""));
+      } else if (ml.dataset.mact === "addset"){
+        var blk = ml.closest(".exblock");
+        var list = blk.querySelector(".setlist");
+        var prevRow = list.querySelector(".setrow:last-child");
+        var pk = prevRow ? prevRow.querySelector(".s-kg").value : "";
+        list.insertAdjacentHTML("beforeend", setRowHtml(list.children.length + 1, pk, ""));
+        renumberSets(blk);
+        var ni = list.querySelector(".setrow:last-child .s-reps");
+        if (ni) ni.focus();
+      } else if (ml.dataset.mact === "delset"){
+        var blk2 = ml.closest(".exblock");
+        var row = ml.closest(".setrow");
+        if (blk2.querySelectorAll(".setrow").length > 1) row.remove();
+        else { row.querySelector(".s-kg").value = ""; row.querySelector(".s-reps").value = ""; }
+        renumberSets(blk2);
+      } else if (ml.dataset.mact === "delex"){
+        var eb = ml.closest(".exblock"), host = eb.parentElement;
+        if (host.querySelectorAll(".exblock").length > 1) eb.remove();
+        else { eb.querySelector(".lx-name").value = ""; eb.querySelectorAll(".s-kg,.s-reps").forEach(function(x){ x.value = ""; }); eb.querySelector(".exhint").textContent = ""; }
       }
+      return;
+    }
+    var ge = e.target.closest("[data-gedit]");
+    if (ge){
+      gymEditIdx = Number(ge.dataset.gedit);
+      renderRecords();
+      refreshExHints(document.getElementById("gedit-rows"));
+      return;
+    }
+    if (e.target.closest("[data-gcancel]")){ gymEditIdx = null; renderRecords(); return; }
+    if (e.target.closest("[data-gsave]")){
+      var gidx = gymEditIdx;
+      var glifts = collectLifts("#gedit-rows");
+      var gmn = Math.max(5, Number(document.getElementById("ge-min").value) || 60);
+      gymEditIdx = null;
+      mutate(function(){
+        var gq = state.quests.find(function(x){ return x.id === "w-gym"; });
+        var entry = gq && gq.slog && gq.slog[gidx];
+        if (entry){
+          entry.min = gmn; entry.lifts = glifts;
+          entry.vol = Math.round(glifts.reduce(function(a, l){ return a + liftVol(l); }, 0));
+          addLog("Iron session of " + entry.t + " re-forged · " + entry.vol.toLocaleString() + " kg");
+        }
+      });
       return;
     }
     var el = e.target.closest("[data-act]");
@@ -3205,8 +3668,11 @@
         if (!val){ if (cin) cin.focus(); return; }
         var wmEl = document.getElementById("wmin-" + q.id);
         var wm = Math.max(0, Math.floor(Number(wmEl && wmEl.value)));
+        var kcEl = document.getElementById("kcal-" + q.id);
+        var kc = Math.max(0, Math.floor(Number(kcEl && kcEl.value)));
         mutate(function(){
           if (wm > 0){ q.tlog = q.tlog || {}; q.tlog[vd] = wm; }
+          if (kc > 0){ q.klog = q.klog || {}; q.klog[vd] = kc; }
           logCounter(q, val, vd);
         });
       } else if (act === "wplus"){
@@ -3413,6 +3879,67 @@
   });
   document.getElementById("sp-what").addEventListener("keydown", function(e){
     if (e.key === "Enter") document.getElementById("sp-add").click();
+  });
+
+  // ---------- the ember (a habit that costs) ----------
+  function emberToll(nToday){ return Math.min(25, 5 * nToday); }
+  function embersOn(d){ return (state.embers || []).filter(function(e){ return e.t === d; }); }
+  function emberCleanStreak(){
+    var n = 0, d = todayStr();
+    if (embersOn(d).length) return 0;
+    d = addDays(d, -1);
+    for (var i = 0; i < 400; i++){
+      if (state.arc && d < state.arc.start) break;
+      if (embersOn(d).length) break;
+      n++; d = addDays(d, -1);
+    }
+    return n + 1; // today (clean so far) counts
+  }
+  function emberLongestClean(){
+    if (!state.arc) return 0;
+    var best = 0, cur = 0, d = state.arc.start;
+    var end = todayStr() < state.arc.end ? todayStr() : state.arc.end;
+    while (d <= end){
+      if (embersOn(d).length){ cur = 0; } else { cur++; if (cur > best) best = cur; }
+      d = addDays(d, 1);
+    }
+    return best;
+  }
+  function renderEmber(){
+    var el = document.getElementById("em-today");
+    if (!el) return;
+    var tds = embersOn(todayStr());
+    var lost = tds.reduce(function(a, e){ return a + e.xp; }, 0);
+    el.textContent = tds.length ? tds.length + "× today · −" + lost + " XP" : "unlit today";
+    var btn = document.getElementById("em-add");
+    btn.textContent = "🔥 It burned (−" + emberToll(tds.length + 1) + " XP)";
+    var st = document.getElementById("em-streak");
+    var clean = emberCleanStreak();
+    st.textContent = clean > 1 ? "✧ " + clean + " days unlit" : tds.length ? "" : "clean so far today";
+  }
+  document.getElementById("em-add").addEventListener("click", function(){
+    mutate(function(){
+      state.embers = state.embers || [];
+      var n = embersOn(todayStr()).length + 1;
+      var xp = emberToll(n);
+      var now = new Date();
+      var at = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+      state.embers.unshift({ t: todayStr(), at: at, xp: xp });
+      if (state.embers.length > 800) state.embers.length = 800;
+      revoke("hab", xp);
+      addLog("The ember burned (" + n + "× today) <b>−" + xp + " XP</b>");
+      toast("🔥 −" + xp + " XP · " + n + "× today<br>Logged honestly — that's the part that counts.");
+    });
+  });
+  document.getElementById("em-undo").addEventListener("click", function(){
+    var tds = embersOn(todayStr());
+    if (!tds.length){ toast("Nothing to undo today."); return; }
+    mutate(function(){
+      var idx = state.embers.findIndex(function(e){ return e.t === todayStr(); });
+      var gone = state.embers.splice(idx, 1)[0];
+      award("hab", gone.xp);
+      addLog("Ember entry undone (+" + gone.xp + " XP back)");
+    });
   });
 
   function logComplaint(withGood){
@@ -3667,6 +4194,44 @@
       });
     });
   });
+  function heightM(){ return (state.goals && state.goals.heightCm ? state.goals.heightCm : 167.6) / 100; }
+  function heightLabel(){ return "5'6\" / " + Math.round(heightM() * 100) + " cm"; }
+  function bmiOf(kg){ if (!kg) return 0; var h = heightM(); return Math.round(kg / (h * h) * 10) / 10; }
+  function bmiBand(b){
+    return b < 18.5 ? "underweight" : b < 25 ? "the healthy band" : b < 30 ? "overweight" : b < 35 ? "obese I" : "obese II";
+  }
+  function vitalsInsight(vit){
+    if (!vit || vit.length < 2) return vit && vit.length === 1
+      ? "One reading on the books — next week's entry starts the trend."
+      : "";
+    function series(key){ return vit.filter(function(e){ return e.vitals[key]; }).map(function(e){ return e.vitals[key]; }); }
+    var out = [];
+    var hrv = series("hrv"), rhr = series("rhr"), vo2 = series("vo2");
+    if (hrv.length >= 2){
+      var dh = Math.round((hrv[0] - hrv[hrv.length - 1]) * 10) / 10;
+      if (dh >= 3) out.push("HRV up <b>" + dh + " ms</b> since your first reading — recovery is improving; the training load is landing well.");
+      else if (dh <= -5) out.push("HRV down <b>" + (-dh) + " ms</b> — accumulated fatigue or poor sleep. Check the Sleep ledger; consider an easier week.");
+      else out.push("HRV holding steady — the body is absorbing the work.");
+      if (hrv.length >= 3 && hrv[0] < hrv[1] && hrv[1] < hrv[2]) out.push("⚠ HRV has fallen two weeks running — classic overreaching signal. Prioritise sleep and keep this week's sessions easy.");
+    }
+    if (rhr.length >= 2){
+      var dr = Math.round(rhr[rhr.length - 1] - rhr[0]);
+      if (dr >= 2) out.push("Resting HR down <b>" + dr + " bpm</b> — the clearest sign the engine is getting stronger. This tracks with aerobic fitness.");
+      else if (dr <= -3) out.push("Resting HR up <b>" + (-dr) + " bpm</b> — often stress, illness brewing, or under-recovery. Worth an easy day.");
+    }
+    if (vo2.length >= 2){
+      var dv = Math.round((vo2[0] - vo2[vo2.length - 1]) * 10) / 10;
+      if (dv >= 1) out.push("VO₂ max up <b>" + dv + "</b> — your sub-30 5k is getting closer with every point.");
+      else if (dv <= -1) out.push("VO₂ max slipped <b>" + (-dv) + "</b> — usually noise week-to-week; judge it over a month.");
+    }
+    var rec = series("rec");
+    if (rec.length >= 2){
+      var dc = Math.round(rec[0] - rec[rec.length - 1]);
+      if (dc >= 2) out.push("Recovery HR up <b>" + dc + " bpm</b> — your heart shuts down faster after effort. That's fitness you can't fake.");
+      else if (dc <= -3) out.push("Recovery HR down <b>" + (-dc) + " bpm</b> — the engine is slower to settle. Watch it alongside HRV before adding load.");
+    }
+    return out.join("<br>");
+  }
   document.getElementById("ci-mood").addEventListener("input", function(e){
     document.getElementById("ci-moodval").textContent = e.target.value;
   });
@@ -3676,9 +4241,14 @@
     kg = Math.round(kg * 10) / 10;
     var waist = Number(document.getElementById("ci-waist").value) || 0;
     var meas = {};
-    [["chest","ci-chest"],["hips","ci-hips"],["arm","ci-arm"],["thigh","ci-thigh"]].forEach(function(p){
+    [["neck","ci-neck"],["chest","ci-chest"],["stomach","ci-stomach"],["hips","ci-hips"],["armL","ci-arml"],["armR","ci-armr"],["thighL","ci-thighl"],["thighR","ci-thighr"],["calfL","ci-calfl"],["calfR","ci-calfr"]].forEach(function(p){
       var v = Number(document.getElementById(p[1]).value) || 0;
       if (v) meas[p[0]] = Math.round(v * 10) / 10;
+    });
+    var vitals = {};
+    [["hrv","ci-hrv"],["rhr","ci-rhr"],["vo2","ci-vo2"],["rec","ci-rechr"]].forEach(function(p){
+      var v = Number(document.getElementById(p[1]).value) || 0;
+      if (v) vitals[p[0]] = Math.round(v * 10) / 10;
     });
     var feel = document.getElementById("ci-feel").value.trim();
     var mood = Number(document.getElementById("ci-mood").value) || 7;
@@ -3687,14 +4257,14 @@
     mutate(function(){
       var t = todayStr();
       state.checkins = state.checkins.filter(function(c){ return c.t !== t; });
-      state.checkins.unshift({ t: t, kg: kg, waist: waist || undefined, meas: meas, feel: feel, mood: mood, photos: photos });
+      state.checkins.unshift({ t: t, kg: kg, waist: waist || undefined, meas: meas, vitals: vitals, feel: feel, mood: mood, photos: photos });
       state.body = state.body.filter(function(e){ return e.t !== t; });
-      state.body.unshift({ t: t, kg: kg, waist: waist || undefined, meas: meas });
+      state.body.unshift({ t: t, kg: kg, waist: waist || undefined, meas: meas, vitals: vitals });
       if (state.body.length > 60) state.body.length = 60;
       award("hab", 25);
       var pq = state.quests.find(function(x){ return x.id === "d-photo"; });
       if (hasPhoto && pq && pq.lastDone !== t){ markDone(pq); addLog("Progress Portrait marked done by the check-in"); }
-      addLog("<b>Check-in sealed:</b> " + kg + " kg" + (waist ? " · waist " + waist + " cm" : "") + " · feeling " + mood + "/10 <b>+25 XP</b>");
+      addLog("<b>Check-in sealed:</b> " + kg + " kg · BMI " + bmiOf(kg) + (waist ? " · waist " + waist + " in" : "") + " · feeling " + mood + "/10 <b>+25 XP</b>");
       var togo = Math.round((kg - state.goals.weightTarget) * 10) / 10;
       toast(togo <= 0 ? "⟡ TARGET WEIGHT TAKEN — " + kg + " kg ⟡" : "⟡ CHECK-IN SEALED — " + kg + " kg ⟡<br>" + togo + " kg between you and " + state.goals.weightTarget, true);
       if (JSON.stringify(state).length > 11e6){
@@ -3708,7 +4278,14 @@
       s.classList.remove("filled"); var im = s.querySelector("img"); im.hidden = true; im.removeAttribute("src");
       s.querySelector("input").value = "";
     });
-    ["ci-chest","ci-hips","ci-arm","ci-thigh"].forEach(function(id){ document.getElementById(id).value = ""; });
+    ["ci-neck","ci-chest","ci-stomach","ci-hips","ci-arml","ci-armr","ci-thighl","ci-thighr","ci-calfl","ci-calfr","ci-hrv","ci-rhr","ci-vo2","ci-rechr"].forEach(function(id){ document.getElementById(id).value = ""; });
+    document.getElementById("ci-bmi").textContent = "";
+  });
+  document.getElementById("ci-kg").addEventListener("input", function(e){
+    var kg = Number(e.target.value) || 0;
+    var el = document.getElementById("ci-bmi");
+    if (kg >= 30){ var b = bmiOf(kg); el.textContent = "BMI " + b + " — " + bmiBand(b) + " (at " + heightLabel() + ")"; }
+    else el.textContent = "";
   });
   function renderCheckins(){
     var el = document.getElementById("checkin-list");
@@ -3716,15 +4293,310 @@
     el.innerHTML = state.checkins.slice(0, 20).map(function(c, i){
       var imgs = ["front","left","right","back"].filter(function(a){ return c.photos && c.photos[a]; })
         .map(function(a){ return '<img src="' + c.photos[a] + '" alt="' + a + ' view" data-ci="' + i + '" data-angle="' + a + '" loading="lazy">'; }).join("");
-      var mstr = c.meas ? ["chest","hips","arm","thigh"].filter(function(k){ return c.meas[k]; })
-        .map(function(k){ return k + " " + c.meas[k]; }).join(" · ") : "";
+      var MLBL = { neck: "neck", chest: "chest", stomach: "stomach", hips: "hips", arm: "arm", thigh: "thigh", armL: "L arm", armR: "R arm", thighL: "L thigh", thighR: "R thigh", calfL: "L calf", calfR: "R calf" };
+      var mstr = c.meas ? ["neck","chest","stomach","hips","arm","armL","armR","thigh","thighL","thighR","calfL","calfR"].filter(function(k){ return c.meas[k]; })
+        .map(function(k){ return MLBL[k] + " " + c.meas[k]; }).join(" · ") : "";
+      var V = c.vitals || {};
+      var vstr = [V.hrv ? "HRV " + V.hrv : "", V.rhr ? "RHR " + V.rhr : "", V.vo2 ? "VO₂ " + V.vo2 : "", V.rec ? "RecHR " + V.rec : ""].filter(Boolean).join(" · ");
       return '<section class="panel"><div class="rk-head" style="font-family:var(--disp);font-size:12px;color:var(--gold);letter-spacing:.14em">' +
-        esc(c.t) + " · <b style='color:var(--gold-hi)'>" + c.kg + " kg</b>" + (c.waist ? " · waist " + c.waist + " cm" : "") +
-        (mstr ? " · " + esc(mstr) + " cm" : "") + " · feeling " + c.mood + "/10</div>" +
+        esc(c.t) + " · <b style='color:var(--gold-hi)'>" + c.kg + " kg</b> · BMI " + bmiOf(c.kg) + (c.waist ? " · waist " + c.waist + " in" : "") +
+        (mstr ? " · " + esc(mstr) + " in" : "") + (vstr ? " · " + vstr : "") + " · feeling " + c.mood + "/10</div>" +
         (c.feel ? '<p style="margin:8px 0 0;font-size:14.5px;white-space:pre-wrap">' + esc(c.feel) + "</p>" : "") +
         (imgs ? '<div class="cigallery">' + imgs + "</div>" : "") + "</section>";
     }).join("") || '<div class="panel"><div class="empty">No check-ins yet. The first one is the baseline every later one gets measured against — worth doing today.</div></div>';
   }
+  // ---------- the transformation (day one vs final day) ----------
+  var pendingT = { start: {}, end: {} };
+  var TANGLES = ["front", "left", "right", "back"];
+  function tSideForm(side, label, dateLabel){
+    var d = state.transform[side] || {};
+    var slots = TANGLES.map(function(a){
+      var img = pendingT[side][a] || (d.photos && d.photos[a]) || "";
+      return '<label class="photoslot' + (img ? " filled" : "") + '" style="min-height:88px">' +
+        '<span>' + a + '</span>' +
+        '<input type="file" accept="image/*" class="tpin" data-tside="' + side + '" data-angle="' + a + '" hidden>' +
+        '<img alt=""' + (img ? ' src="' + img + '"' : " hidden") + ">" +
+        "</label>";
+    }).join("");
+    function v(k){ return d[k] != null ? d[k] : ""; }
+    return '<div class="tside"><h3>' + label + '</h3><div class="tdate">' + dateLabel + "</div>" +
+      '<div class="photorow2">' + slots + "</div>" +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px">' +
+      '<input type="number" class="tin" id="t-' + side + '-kg" placeholder="Weight kg" step="0.1" value="' + v("kg") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-waist" placeholder="Waist in" step="0.1" value="' + v("waist") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-neck" placeholder="Neck in" step="0.1" value="' + v("neck") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-chest" placeholder="Chest in" step="0.1" value="' + v("chest") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-stomach" placeholder="Stomach in" step="0.1" value="' + v("stomach") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-hips" placeholder="Hips in" step="0.1" value="' + v("hips") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-arml" placeholder="L arm in" step="0.1" value="' + v("armL") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-armr" placeholder="R arm in" step="0.1" value="' + v("armR") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-thighl" placeholder="L thigh in" step="0.1" value="' + v("thighL") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-thighr" placeholder="R thigh in" step="0.1" value="' + v("thighR") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-calfl" placeholder="L calf in" step="0.1" value="' + v("calfL") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-calfr" placeholder="R calf in" step="0.1" value="' + v("calfR") + '">' +
+      "</div>" +
+      '<button class="btn btn-sm" data-tseal="' + side + '" type="button" style="width:100%;margin-top:9px">Seal ' + label + "</button></div>";
+  }
+  function tSideSealed(side, label){
+    var d = state.transform[side];
+    var imgs = TANGLES.filter(function(a){ return d.photos && d.photos[a]; }).map(function(a){
+      return '<img src="' + d.photos[a] + '" alt="' + a + '" loading="lazy">';
+    }).join("");
+    return '<div class="tside sealed"><h3>' + label + '</h3><div class="tdate">' + esc(d.t) + "</div>" +
+      (imgs ? '<div class="cigallery photorow2" style="margin:0">' + imgs + "</div>" : "") +
+      '<div class="tstats"><b>' + d.kg + ' kg</b> · BMI <b>' + bmiOf(d.kg) + '</b>' +
+      (d.waist ? " · waist <b>" + d.waist + "</b>" : "") +
+      (d.neck ? " · neck <b>" + d.neck + "</b>" : "") +
+      (d.chest ? " · chest <b>" + d.chest + "</b>" : "") +
+      (d.stomach ? " · stomach <b>" + d.stomach + "</b>" : "") +
+      (d.hips ? " · hips <b>" + d.hips + "</b>" : "") +
+      ((d.armL || d.armR) ? " · arms <b>" + (d.armL || "—") + "/" + (d.armR || "—") + "</b>" : d.arm ? " · arm <b>" + d.arm + "</b>" : "") +
+      ((d.thighL || d.thighR) ? " · thighs <b>" + (d.thighL || "—") + "/" + (d.thighR || "—") + "</b>" : "") +
+      ((d.calfL || d.calfR) ? " · calves <b>" + (d.calfL || "—") + "/" + (d.calfR || "—") + "</b>" : "") + "</div>" +
+      '<button class="btn-ghost" data-tredo="' + side + '" type="button" style="width:100%;margin-top:8px;padding:5px;font-size:12px">✎ Retake</button></div>';
+  }
+  function renderTransform(){
+    var el = document.getElementById("trans-grid");
+    if (!el) return;
+    var T = state.transform;
+    var html = "";
+    html += (T.start && !T._editStart === false) || !T.start
+      ? (T.start ? tSideSealed("start", "Day One") : tSideForm("start", "Day One", "1 September 2026"))
+      : tSideSealed("start", "Day One");
+    var endOpen = todayStr() >= "2026-12-25";
+    if (T.end){
+      html += tSideSealed("end", "The Final Day");
+    } else if (endOpen){
+      html += tSideForm("end", "The Final Day", "31 December 2026");
+    } else {
+      html += '<div class="tside"><h3>The Final Day</h3><div class="tdate">31 December 2026</div>' +
+        '<div class="tlock"><span class="lockico">🔒</span><span>Locked until the arc\'s final week.<br>Earn what goes here.</span></div></div>';
+    }
+    if (T.start && T.end){
+      var dk = Math.round((T.start.kg - T.end.kg) * 10) / 10;
+      var dw = (T.start.waist && T.end.waist) ? Math.round((T.start.waist - T.end.waist) * 10) / 10 : null;
+      var db = Math.round((bmiOf(T.start.kg) - bmiOf(T.end.kg)) * 10) / 10;
+      html += '<div class="tdelta">⟡ ' + (dk > 0 ? dk + " KG SHED" : "THE ARC COMPLETE") +
+        (db > 0 ? " · BMI −" + db : "") +
+        (dw ? " · " + dw + " IN OFF THE WAIST" : "") + " · 122 DAYS ⟡</div>";
+    }
+    if ((T.start && T.end) || todayStr() >= "2026-12-31"){
+      html += '<button class="btn" id="open-scroll" type="button" style="grid-column:1/-1;width:100%;margin-top:4px">📜 Unroll the Final Scroll — the full account, with insights</button>';
+    }
+    el.innerHTML = html;
+  }
+  document.addEventListener("change", function(e){
+    var inp = e.target.closest && e.target.closest(".tpin");
+    if (!inp) return;
+    var f = inp.files && inp.files[0];
+    if (!f) return;
+    var side = inp.dataset.tside, angle = inp.dataset.angle, slot = inp.closest(".photoslot");
+    compressImage(f, function(dataUrl){
+      if (!dataUrl){ toast("Couldn't read that image."); return; }
+      pendingT[side][angle] = dataUrl;
+      var im = slot.querySelector("img");
+      im.src = dataUrl; im.hidden = false; slot.classList.add("filled");
+    });
+  });
+  document.addEventListener("click", function(e){
+    var sealBtn = e.target.closest && e.target.closest("[data-tseal]");
+    if (sealBtn){
+      var side = sealBtn.dataset.tseal;
+      var kg = Number(document.getElementById("t-" + side + "-kg").value) || 0;
+      var prev = state.transform[side] || {};
+      var photos = {};
+      TANGLES.forEach(function(a){
+        var p = pendingT[side][a] || (prev.photos && prev.photos[a]);
+        if (p) photos[a] = p;
+      });
+      if (!kg){ document.getElementById("t-" + side + "-kg").focus(); toast("The weight is part of the record — step on the scale."); return; }
+      if (!Object.keys(photos).length){ toast("At least one portrait — the mirror demands it."); return; }
+      mutate(function(){
+        state.transform[side] = {
+          t: todayStr(), kg: Math.round(kg * 10) / 10,
+          waist: Number(document.getElementById("t-" + side + "-waist").value) || undefined,
+          neck: Number(document.getElementById("t-" + side + "-neck").value) || undefined,
+          chest: Number(document.getElementById("t-" + side + "-chest").value) || undefined,
+          stomach: Number(document.getElementById("t-" + side + "-stomach").value) || undefined,
+          hips: Number(document.getElementById("t-" + side + "-hips").value) || undefined,
+          armL: Number(document.getElementById("t-" + side + "-arml").value) || undefined,
+          armR: Number(document.getElementById("t-" + side + "-armr").value) || undefined,
+          thighL: Number(document.getElementById("t-" + side + "-thighl").value) || undefined,
+          thighR: Number(document.getElementById("t-" + side + "-thighr").value) || undefined,
+          calfL: Number(document.getElementById("t-" + side + "-calfl").value) || undefined,
+          calfR: Number(document.getElementById("t-" + side + "-calfr").value) || undefined,
+          photos: photos
+        };
+        award("hab", side === "start" ? 50 : 200);
+        addLog(side === "start"
+          ? "<b>Day One sealed</b> — the before is on the record <b>+50 XP</b>"
+          : "<b>THE FINAL DAY SEALED</b> — the after exists <b>+200 XP</b>");
+        toast(side === "start" ? "⟡ DAY ONE SEALED — +50 XP ⟡<br>December will answer this photo." : "⟡ THE FINAL DAY — +200 XP ⟡<br>Look what you did.", true);
+      });
+      pendingT[side] = {};
+      return;
+    }
+    var redoBtn = e.target.closest && e.target.closest("[data-tredo]");
+    if (redoBtn){
+      var s2 = redoBtn.dataset.tredo;
+      var keep = state.transform[s2];
+      pendingT[s2] = (keep && keep.photos) ? Object.assign({}, keep.photos) : {};
+      mutate(function(){ delete state.transform[s2]; addLog("Retaking the " + (s2 === "start" ? "Day One" : "Final Day") + " record"); });
+    }
+  });
+
+  // ---------- the final scroll ----------
+  function scrollData(){
+    var T = state.transform || {};
+    var oldest = state.body.length ? state.body[state.body.length - 1] : null;
+    var latest = state.body.length ? state.body[0] : null;
+    var s = T.start || (oldest ? { t: oldest.t, kg: oldest.kg, waist: oldest.waist,
+      neck: (oldest.meas || {}).neck, chest: (oldest.meas || {}).chest, stomach: (oldest.meas || {}).stomach, hips: (oldest.meas || {}).hips,
+      armL: (oldest.meas || {}).armL, armR: (oldest.meas || {}).armR,
+      thighL: (oldest.meas || {}).thighL, thighR: (oldest.meas || {}).thighR,
+      calfL: (oldest.meas || {}).calfL, calfR: (oldest.meas || {}).calfR } : null);
+    var en = T.end || (latest && s && latest.t !== s.t ? { t: latest.t, kg: latest.kg, waist: latest.waist,
+      neck: (latest.meas || {}).neck, chest: (latest.meas || {}).chest, stomach: (latest.meas || {}).stomach, hips: (latest.meas || {}).hips,
+      armL: (latest.meas || {}).armL, armR: (latest.meas || {}).armR,
+      thighL: (latest.meas || {}).thighL, thighR: (latest.meas || {}).thighR,
+      calfL: (latest.meas || {}).calfL, calfR: (latest.meas || {}).calfR } : null);
+    return { s: s, e: en, fromSeal: !!(T.start && T.end) };
+  }
+  function buildFinalScroll(){
+    var D = scrollData(), s = D.s, e = D.e, G = state.goals;
+    var info = totalLvl();
+    function row(l, a, b, unit, invert){
+      if (a == null && b == null) return "";
+      var d = (a != null && b != null) ? Math.round((b - a) * 10) / 10 : null;
+      var dtxt = d == null ? "" : d === 0 ? " (±0)" : " (<b>" + (d > 0 ? "+" + d : d) + "</b>)";
+      return '<div class="srow"><span>' + l + "</span><span>" + (a != null ? a : "—") + " → <b>" + (b != null ? b : "—") + "</b> " + (unit || "") + dtxt + "</span></div>";
+    }
+    function pairv(o, a, b, legacy){ return (o[a] || o[b]) ? ((o[a] || "—") + "/" + (o[b] || "—")) : (o[legacy] || null); }
+    var html = "<h2>📜 THE FINAL SCROLL</h2>" +
+      '<div class="ssub">' + esc(state.name) + " · Winter Arc · 1 Sep — 31 Dec 2026 · 122 days" + (D.fromSeal ? "" : " · (drawn from your latest ledgers)") + "</div>";
+    if (s && e){
+      var bs = bmiOf(s.kg), be = bmiOf(e.kg);
+      html += "<h4>The Body</h4>" +
+        row("Weight", s.kg, e.kg, "kg") +
+        row("BMI", bs, be) +
+        row("Neck", s.neck, e.neck, "in") +
+        row("Waist", s.waist, e.waist, "in") +
+        row("Chest", s.chest, e.chest, "in") +
+        row("Stomach", s.stomach, e.stomach, "in") +
+        row("Hips", s.hips, e.hips, "in");
+      var aS = pairv(s, "armL", "armR", "arm"), aE = pairv(e, "armL", "armR", "arm");
+      var tS = pairv(s, "thighL", "thighR", "thigh"), tE = pairv(e, "thighL", "thighR", "thigh");
+      if (aS || aE) html += '<div class="srow"><span>Arms L/R</span><span>' + (aS || "—") + " → <b>" + (aE || "—") + "</b> in</span></div>";
+      if (tS || tE) html += '<div class="srow"><span>Thighs L/R</span><span>' + (tS || "—") + " → <b>" + (tE || "—") + "</b> in</span></div>";
+      var cS = pairv(s, "calfL", "calfR", null), cE = pairv(e, "calfL", "calfR", null);
+      if (cS || cE) html += '<div class="srow"><span>Calves L/R</span><span>' + (cS || "—") + " → <b>" + (cE || "—") + "</b> in</span></div>";
+    }
+    var vitAll = state.body.filter(function(x){ return x.vitals && (x.vitals.hrv || x.vitals.rhr || x.vitals.vo2 || x.vitals.rec); });
+    if (vitAll.length){
+      html += "<h4>The Engine</h4>";
+      ["hrv","rhr","vo2","rec"].forEach(function(k){
+        var ser = vitAll.filter(function(x){ return x.vitals[k]; });
+        if (ser.length >= 1){
+          var first = ser[ser.length - 1].vitals[k], last = ser[0].vitals[k];
+          html += row({ hrv: "HRV", rhr: "Resting HR", vo2: "VO₂ max", rec: "Recovery HR" }[k], first, last, { hrv: "ms", rhr: "bpm", vo2: "", rec: "bpm" }[k]);
+        }
+      });
+    }
+    var runs = (state.quests.find(function(q){ return q.id === "w-run"; }) || {}).slog || [];
+    var rides = (state.quests.find(function(q){ return q.id === "w-cycle"; }) || {}).slog || [];
+    var gyms = (state.quests.find(function(q){ return q.id === "w-gym"; }) || {}).slog || [];
+    var runKm = Math.round(runs.reduce(function(a, x){ return a + (x.km || 0); }, 0) * 10) / 10;
+    var rideKm = Math.round(rides.reduce(function(a, x){ return a + (x.km || 0); }, 0) * 10) / 10;
+    html += "<h4>The Work</h4>" +
+      '<div class="srow"><span>Runs</span><span><b>' + runs.length + "</b> · " + runKm + " km</span></div>" +
+      '<div class="srow"><span>Rides</span><span><b>' + rides.length + "</b> · " + rideKm + " km</span></div>" +
+      '<div class="srow"><span>Iron sessions</span><span><b>' + gyms.length + "</b></span></div>";
+    var ironVol = Math.round(gyms.reduce(function(a, x){ return a + (x.vol != null ? x.vol : (x.lifts || []).reduce(function(b, l){ return b + liftVol(l); }, 0)); }, 0));
+    if (ironVol) html += '<div class="srow"><span>Iron moved</span><span><b>' + ironVol.toLocaleString() + " kg</b></span></div>";
+    var p5 = best5kPace(); if (p5) html += '<div class="srow"><span>Best 5k</span><span><b>' + Math.round(p5 * 5) + " min</b> (target sub-" + G.run5k + ")</span></div>";
+    var lg = longestRun(); if (lg) html += '<div class="srow"><span>Longest run</span><span><b>' + lg + " km</b></span></div>";
+    var mp = maxPull(); if (mp) html += '<div class="srow"><span>Deadlift</span><span><b>' + mp + " kg</b> (target " + G.deadlift + ")</span></div>";
+    var ezh = runs.filter(function(x){ return x.type === "easy" && x.hr; });
+    if (ezh.length >= 2) html += row("Easy-run HR", ezh[ezh.length - 1].hr, ezh[0].hr, "bpm");
+    var cads = runs.filter(function(x){ return x.cad; });
+    if (cads.length >= 2) html += row("Cadence", cads[cads.length - 1].cad, cads[0].cad, "spm");
+    var bestQ = null; state.quests.forEach(function(q){ if ((q.best || 0) > ((bestQ && bestQ.best) || 0)) bestQ = q; });
+    var reframes = state.reframes || [];
+    var answered = reframes.filter(function(r){ return r.good; }).length;
+    var mercyUsed = 0; var MU = (state.arc && state.arc.mercyUsed) || {}; Object.keys(MU).forEach(function(k){ mercyUsed += MU[k]; });
+    var spendTotal = (state.spends || []).reduce(function(a, x){ return a + x.total; }, 0);
+    html += "<h4>The Mind & The Game</h4>" +
+      '<div class="srow"><span>Level</span><span><b>' + info.lvl + "</b> · " + rankFor(info.lvl) + " · " + state.xp.toLocaleString() + " XP</span></div>" +
+      '<div class="srow"><span>Trophies</span><span><b>' + Object.keys(state.trophies || {}).length + "</b></span></div>" +
+      (bestQ && bestQ.best ? '<div class="srow"><span>Longest streak</span><span><b>' + bestQ.best + " days</b> · " + esc(bestQ.title) + "</span></div>" : "") +
+      '<div class="srow"><span>Books this arc</span><span><b>' + arcBooks() + "</b> of " + G.books + "</span></div>" +
+      '<div class="srow"><span>Journal entries</span><span><b>' + (state.journal || []).length + "</b> · chronicle <b>" + (state.chronicle || []).length + "</b></span></div>" +
+      '<div class="srow"><span>Complaints reframed</span><span><b>' + answered + "</b> of " + reframes.length + "</span></div>" +
+      '<div class="srow"><span>Mercy tokens used</span><span><b>' + mercyUsed + "</b></span></div>" +
+      ((state.embers || []).length ? '<div class="srow"><span>The ember won</span><span><b>' + state.embers.length + "×</b> · −" +
+        state.embers.reduce(function(a2, x){ return a2 + x.xp; }, 0) + " XP · longest unlit <b>" + emberLongestClean() + " days</b></span></div>" : "") +
+      (spendTotal ? '<div class="srow"><span>Coin spent (logged)</span><span><b>₹' + spendTotal.toLocaleString() + "</b></span></div>" : "");
+    html += "<h4>What It Means</h4>";
+    var ins = [];
+    if (s && e && s.kg && e.kg){
+      var lost = Math.round((s.kg - e.kg) * 10) / 10;
+      var days = Math.max(1, Math.round((new Date(e.t + "T12:00:00") - new Date(s.t + "T12:00:00")) / 864e5));
+      var rate = Math.round(lost / days * 7 * 100) / 100;
+      if (lost > 0) ins.push("You shed <b>" + lost + " kg in " + days + " days</b> — about " + rate + " kg a week. " +
+        (rate > 1.2 ? "That's aggressive; guard muscle with protein and the iron." : rate >= 0.4 ? "That's the sustainable band — this is how weight stays off." : "Slow and steady — the direction matters more than the speed."));
+      var bs2 = bmiOf(s.kg), be2 = bmiOf(e.kg);
+      if (bmiBand(bs2) !== bmiBand(be2)) ins.push("Your BMI moved from <b>" + bs2 + " (" + bmiBand(bs2) + ")</b> to <b>" + be2 + " (" + bmiBand(be2) + ")</b> — you changed category, not just number.");
+      else ins.push("BMI " + bs2 + " → <b>" + be2 + "</b>, still in " + bmiBand(be2) + " — next stop is " + (be2 >= 30 ? "under 30" : be2 >= 25 ? "under 25" : "holding steady") + ".");
+      if (s.waist && e.waist && s.waist - e.waist >= 1.5) ins.push("<b>" + Math.round((s.waist - e.waist) * 10) / 10 + " inches off the waist</b> — the single best marker that what you lost was fat, not water.");
+      if (e.kg <= G.weightTarget) ins.push("⟡ <b>Target weight taken.</b> The victory condition is met — set the next one.");
+      else ins.push(Math.round((e.kg - G.weightTarget) * 10) / 10 + " kg still stand between you and " + G.weightTarget + " — the arc ends, the war doesn't.");
+    } else {
+      ins.push("Not enough on the ledgers yet to compare start against end — seal your check-ins and the Day One record, and this scroll writes itself.");
+    }
+    var vi = vitalsInsight(state.body.filter(function(x){ return x.vitals && (x.vitals.hrv || x.vitals.rhr || x.vitals.vo2 || x.vitals.rec); }).slice(0, 14));
+    if (vi) ins.push(vi);
+    if (ezh.length >= 3){
+      var dEz = ezh[ezh.length - 1].hr - ezh[0].hr;
+      if (dEz >= 5) ins.push("Your easy runs cost <b>" + dEz + " bpm less</b> than when you started — the aerobic base is real, and race day will spend it.");
+    }
+    if (cads.length >= 3 && cads[0].cad >= 170 && cads[cads.length - 1].cad < 165) ins.push("Cadence climbed from " + cads[cads.length - 1].cad + " to <b>" + cads[0].cad + " steps/min</b> — lighter steps, less impact, fewer injuries.");
+    var emAll = state.embers || [];
+    if (emAll.length && state.arc){
+      var mid = addDays(state.arc.start, 61);
+      var h1 = emAll.filter(function(x){ return x.t < mid; }).length;
+      var h2 = emAll.filter(function(x){ return x.t >= mid; }).length;
+      if (h1 > 0 && h2 < h1 * 0.6) ins.push("The ember won " + h1 + " times in the first half, <b>" + h2 + " in the second</b> — the grip is loosening. Whatever you changed, keep it.");
+      else if (h2 > h1 * 1.4 && h2 > 5) ins.push("The ember burned more in the second half (" + h1 + " → " + h2 + ") — stress found the old door. Watch what precedes it in the timestamps.");
+    }
+    var tollN = Object.keys(state.tollLog || {}).length;
+    if (bestQ && bestQ.best >= 14) ins.push("Your steadiest blade was <b>" + esc(bestQ.title) + "</b> at " + bestQ.best + " straight days — consistency like that is the real transformation.");
+    if (tollN) ins.push(tollN + " day" + (tollN > 1 ? "s" : "") + " drew tolls — and you kept going anyway. That's the difference between a streak and a life.");
+    html += ins.map(function(x){ return '<div class="sins">' + x + "</div>"; }).join("");
+    html += '<div class="erow2" style="margin-top:14px"><button class="btn" id="scroll-copy" type="button">Copy as text</button>' +
+      '<button class="btn-ghost" id="scroll-close" type="button">Close</button></div>';
+    return html;
+  }
+  var scrollbox = document.getElementById("scrollbox");
+  document.addEventListener("click", function(e){
+    if (e.target.closest && e.target.closest("#open-scroll")){
+      document.getElementById("scrollpane").innerHTML = buildFinalScroll();
+      scrollbox.hidden = false;
+      return;
+    }
+    if (e.target.closest && e.target.closest("#scroll-close")){ scrollbox.hidden = true; return; }
+    if (!scrollbox.hidden && e.target === scrollbox){ scrollbox.hidden = true; return; }
+    if (e.target.closest && e.target.closest("#scroll-copy")){
+      var tmp = document.createElement("div"); tmp.innerHTML = buildFinalScroll();
+      tmp.querySelectorAll("h4").forEach(function(h){ h.textContent = "\n== " + h.textContent + " =="; });
+      tmp.querySelectorAll(".srow,.sins,.ssub,h2").forEach(function(r){ r.textContent = r.textContent + "\n"; });
+      var txt = tmp.textContent.replace(/Copy as text|Close/g, "").trim();
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(function(){ toast("The scroll is copied — paste it anywhere."); })
+          .catch(function(){ toast("Couldn't copy — screenshot it instead."); });
+      } else toast("Couldn't copy — screenshot it instead.");
+    }
+  });
+
   var photobox = document.getElementById("photobox");
   document.addEventListener("click", function(e){
     if (e.target.matches && e.target.matches(".cigallery img")){
@@ -3775,7 +4647,7 @@
     lines.push("Level " + info.lvl + " (" + rankFor(info.lvl) + ") · " + state.xp.toLocaleString() + " XP");
     if (state.body.length){
       var cur = state.body[0].kg, lost = Math.round((G.weightStart - cur) * 10) / 10;
-      lines.push("Weight: " + cur + " kg (" + (lost > 0 ? "−" + lost : "±" + (-lost)) + " kg, target " + G.weightTarget + ")");
+      lines.push("Weight: " + cur + " kg · BMI " + bmiOf(cur) + " (" + (lost > 0 ? "−" + lost : "±" + (-lost)) + " kg, target " + G.weightTarget + ")");
     }
     var p5 = best5kPace();
     if (p5) lines.push("Best 5k: " + Math.round(p5 * 5) + " min (target sub-" + G.run5k + ")");
@@ -3789,6 +4661,97 @@
     lines.push("— sent from the quest board");
     return lines.join("\n");
   }
+  function buildSharingScroll(){
+    var S = JSON.parse(JSON.stringify(state));
+    ["journal","chronicle","reframes","embers","spends"].forEach(function(k){ S[k] = []; });
+    (S.checkins || []).forEach(function(c){ delete c.photos; });
+    if (S.transform){ ["start","end"].forEach(function(sd){ if (S.transform[sd]) delete S.transform[sd].photos; }); }
+    S.sharedScroll = todayStr();
+    return JSON.stringify(S);
+  }
+  document.getElementById("vault-share").addEventListener("click", function(){
+    var data2 = buildSharingScroll();
+    var okDl = false;
+    try {
+      var bl = new Blob([data2], { type: "application/json" });
+      var a2 = document.createElement("a");
+      a2.href = URL.createObjectURL(bl);
+      a2.download = "progress.json";
+      document.body.appendChild(a2); a2.click(); a2.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a2.href); }, 4000);
+      okDl = true;
+    } catch (e){}
+    var note = document.getElementById("vault-note");
+    note.innerHTML = "🕊 <b>Sharing Scroll</b> prepared as progress.json — journals, chronicle, reframes, the Ember, the Coin Ledger and all photos stripped." +
+      (okDl ? " Upload it to the repo for your witnesses." : "") +
+      ' <a href="#" id="share-copy" style="color:var(--gold-hi)">Copy as text instead</a>';
+    var sc = document.getElementById("share-copy");
+    if (sc) sc.addEventListener("click", function(ev){
+      ev.preventDefault();
+      note.innerHTML = 'Copy this and save it as progress.json:<br><textarea rows="4" style="width:100%;margin-top:6px;background:#0d0918;border:1px solid var(--line);border-radius:7px;color:var(--ink);padding:8px;font-size:11px"></textarea>';
+      note.querySelector("textarea").value = data2;
+    });
+    toast("🕊 Sharing Scroll prepared — the private pages stay home.");
+  });
+
+  // ---------- the raven: one-tap delivery of the Sharing Scroll to the repo ----------
+  var RAVEN = { owner: "abhishekmodi26", repo: "life-quest", path: "progress.json", branch: "main" };
+  function ravenKey(){ try { return window.localStorage["lq-raven"] || ""; } catch (e){ return ""; } }
+  function ravenForgetKey(){ try { delete window.localStorage["lq-raven"]; } catch (e){} }
+  function ravenSetupUI(msg){
+    var note = document.getElementById("vault-note");
+    note.innerHTML = (msg ? msg + "<br>" : "") +
+      '🐦‍⬛ <b>The Raven needs its key</b> — a GitHub token that can write only to your life-quest repo.' +
+      '<div class="addreward" style="margin-top:7px"><input type="password" id="raven-key" placeholder="github_pat_…" autocomplete="off" style="flex:1;min-width:0">' +
+      '<button class="btn btn-sm" id="raven-save" type="button">Keep the key</button></div>' +
+      '<span class="hintlbl" style="display:block;margin-top:5px">Make it at github.com → Settings → Developer settings → Fine-grained tokens: access to <b>life-quest only</b>, permission <b>Contents: read and write</b>, nothing else. The key is kept on this device only — never in backups or the shared scroll.</span>';
+    var sv = document.getElementById("raven-save");
+    if (sv) sv.addEventListener("click", function(){
+      var t = document.getElementById("raven-key").value.trim();
+      if (!t){ document.getElementById("raven-key").focus(); return; }
+      try { window.localStorage["lq-raven"] = t; } catch (e){ note.textContent = "⚠ This device refused to keep the key."; return; }
+      note.innerHTML = "🗝 The key is kept on this device. Tap <b>Send the Raven</b> again — it will fly.";
+    });
+  }
+  document.getElementById("vault-raven").addEventListener("click", function(){
+    if (window.__viewMode){ toast("A viewing scroll commands no ravens."); return; }
+    var tok = ravenKey();
+    if (!tok){ ravenSetupUI(""); return; }
+    var note = document.getElementById("vault-note");
+    note.textContent = "🐦‍⬛ The raven is flying…";
+    var api = "https://api.github.com/repos/" + RAVEN.owner + "/" + RAVEN.repo + "/contents/" + RAVEN.path;
+    var HDR = { "Authorization": "Bearer " + tok, "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+    var data2 = buildSharingScroll();
+    var b64 = btoa(unescape(encodeURIComponent(data2)));
+    fetch(api + "?ref=" + RAVEN.branch, { headers: HDR }).then(function(r){
+      if (r.status === 404) return null;
+      if (r.status === 401 || r.status === 403) throw { code: 401 };
+      if (!r.ok) throw { code: r.status };
+      return r.json();
+    }).then(function(cur){
+      var body = { message: "Sharing Scroll — " + todayStr(), content: b64, branch: RAVEN.branch };
+      if (cur && cur.sha) body.sha = cur.sha;
+      return fetch(api, { method: "PUT", headers: HDR, body: JSON.stringify(body) });
+    }).then(function(r){
+      if (r.status === 401 || r.status === 403) throw { code: 401 };
+      if (!r.ok) throw { code: r.status };
+      note.innerHTML = '🐦‍⬛ <b>The raven has landed</b> — progress.json is fresh on the repo; your witnesses see the new week. ' +
+        '<a href="#" id="raven-forget" style="color:var(--ink-faint)">forget the key</a>';
+      var fg = document.getElementById("raven-forget");
+      if (fg) fg.addEventListener("click", function(ev){ ev.preventDefault(); ravenForgetKey(); note.textContent = "The key is forgotten on this device."; });
+      toast("🐦‍⬛ THE RAVEN HAS FLOWN — the scroll is delivered", true);
+      mutate(function(){ addLog("🐦‍⬛ The raven delivered the Sharing Scroll to the repo"); });
+    }).catch(function(err){
+      if (err && err.code === 401){
+        ravenForgetKey();
+        ravenSetupUI("⚠ <b>The key was refused</b> — expired or wrong. It has been forgotten here; paste a fresh one.");
+      } else if (err && err.code === 404){
+        note.innerHTML = "⚠ The raven found no roost — check the token has access to <b>" + RAVEN.owner + "/" + RAVEN.repo + "</b> with Contents read &amp; write.";
+      } else {
+        note.innerHTML = "⚠ The raven turned back — no connection, or GitHub refused (" + ((err && err.code) || "network") + "). Try again in a moment.";
+      }
+    });
+  });
   document.getElementById("herald").addEventListener("click", function(){
     var text = heraldText();
     if (navigator.share){
@@ -3806,11 +4769,12 @@
       if (!p || !Array.isArray(p.quests)) throw 0;
       Object.keys(state).forEach(function(k){ delete state[k]; });
       Object.assign(state, p);
-      ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends"].forEach(function(k){ state[k] = state[k] || []; });
+      ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers"].forEach(function(k){ state[k] = state[k] || []; });
       state.xpDaily = state.xpDaily || {}; state.tollLog = state.tollLog || {};
       state.trophies = state.trophies || {}; state.bosses = state.bosses || {};
       state.coins = state.coins || 0;
-      state.goals = state.goals || { weightStart: 104, weightTarget: 89, run5k: 30, deadlift: 120, books: 7 };
+      state.goals = state.goals || { weightStart: 101.2, weightTarget: 89, run5k: 30, deadlift: 120, books: 7 };
+      state.transform = state.transform || {};
       state.notifTimes = state.notifTimes || ["08:30", "13:30", "21:00"];
       state.notifOn = !!state.notifOn;
       state.reframes.forEach(function(r, i){ if (!r.id) r.id = "rf" + i + (r.t || "").replace(/-/g, ""); });
@@ -3832,12 +4796,13 @@
       mutate(function(){
         Object.keys(state).forEach(function(k){ delete state[k]; });
         Object.assign(state, parsed);
-        ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends"].forEach(function(k){ state[k] = state[k] || []; });
+        ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers"].forEach(function(k){ state[k] = state[k] || []; });
         state.xpDaily = state.xpDaily || {}; state.tollLog = state.tollLog || {};
         state.trophies = state.trophies || {}; state.bosses = state.bosses || {};
         state.coins = state.coins || 0;
-        state.goals = state.goals || { weightStart: 104, weightTarget: 89, run5k: 30, deadlift: 120, books: 7 };
+        state.goals = state.goals || { weightStart: 101.2, weightTarget: 89, run5k: 30, deadlift: 120, books: 7 };
         state.trophies = state.trophies || {}; state.bosses = state.bosses || {};
+        state.transform = state.transform || {};
         state.notifTimes = state.notifTimes || ["08:30", "13:30", "21:00"];
         state.notifOn = !!state.notifOn;
         state.reframes.forEach(function(r, i){ if (!r.id) r.id = "rf" + i + (r.t || "").replace(/-/g, ""); });
