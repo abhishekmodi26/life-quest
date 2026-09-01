@@ -103,6 +103,13 @@
     transition:width .5s ease;
   }
   @keyframes shimmer{from{background-position:0 0}to{background-position:200% 0}}
+  .qod{
+    background:linear-gradient(180deg,rgba(201,164,69,.07),rgba(201,164,69,.02));
+    border:1px solid rgba(201,164,69,.25);border-radius:10px;
+    padding:11px 14px;margin:12px 0 16px;font-size:13.5px;line-height:1.55;
+    color:var(--ink-mut);font-style:italic;
+  }
+  .qod b{color:var(--gold-hi);font-style:normal;font-size:12px;letter-spacing:.06em}
   .arcline{
     margin-top:12px;padding:8px 12px;border:1px solid #2e4a6b;border-radius:8px;
     background:linear-gradient(90deg,rgba(60,110,170,.14),rgba(60,110,170,.03));
@@ -271,8 +278,29 @@
   .chron p{margin:0;font-size:14.5px;color:var(--ink);white-space:pre-wrap}
 
   /* ================= records tables ================= */
+  .calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:10px 0 4px}
+  .calhead span{text-align:center;font-family:var(--disp);font-size:10px;letter-spacing:.12em;color:var(--ink-faint)}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .calcell{
+    aspect-ratio:1;border-radius:8px;border:1px solid var(--line);background:var(--card-2);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+    font-size:12px;color:var(--ink-mut);font-variant-numeric:tabular-nums;cursor:pointer;padding:0;
+  }
+  .calcell .cmark{font-size:10px;line-height:1}
+  .calcell.c-blank{border:none;background:none;cursor:default}
+  .calcell.c-fut{opacity:.35;cursor:default}
+  .calcell.c-full{border-color:var(--gold);background:rgba(201,164,69,.14);color:var(--gold-hi)}
+  .calcell.c-most{border-color:rgba(107,168,107,.6);background:rgba(107,168,107,.1)}
+  .calcell.c-some{border-color:rgba(201,164,69,.35);background:rgba(201,164,69,.05)}
+  .calcell.c-none{border-color:rgba(197,90,90,.5);background:rgba(197,90,90,.08)}
+  .calcell.c-shel{border-color:#3a4f7a;background:rgba(74,111,158,.12)}
+  .calcell.c-sel{outline:2px solid var(--gold)}
+  #cal-detail{margin-top:10px;font-size:13px;line-height:1.6}
+  #cal-detail .cd-q{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px dotted rgba(255,255,255,.05)}
   .tscroll{overflow-x:auto}
   .rectable{width:100%;border-collapse:collapse;font-size:13.5px;min-width:420px}
+  #body-table,#daysheet-table{min-width:700px}
+  #vitals-table,#gym-table,#run-table,#sleep-table{min-width:540px}
   .rectable th{
     font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
     color:var(--gold);text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--line);
@@ -463,7 +491,7 @@
   .tl-s{display:none}
   /* ================= mobile ================= */
   @media (max-width:768px){
-    body{font-size:15px}
+    body{font-size:14px}
     .wrap{padding:16px 12px 46px}
     .tl-l{display:none}
     .tl-s{display:inline}
@@ -528,12 +556,12 @@
     .addform input[type=text]{font-size:14.5px !important;padding:10px 10px !important}
     .frow select{min-width:86px;font-size:13px}
     .btn{padding:8px 12px;font-size:13.5px}
-    .rectable{font-size:12.5px;min-width:0}
+    .rectable{font-size:12px}
     #toasts{bottom:56px}
     .transgrid{grid-template-columns:1fr}
     .tdelta{font-size:12.5px;letter-spacing:.05em}
     .addreward input{min-width:0}
-    .panel{overflow:hidden}
+    .panel{overflow-x:clip}
   }
 </style>
 
@@ -569,6 +597,8 @@
     </div>
   </header>
 
+  <div class="qod" id="daily-quote" aria-live="polite"></div>
+
   <section class="stats" id="stats"></section>
 
   <nav class="tabbar" role="tablist">
@@ -587,60 +617,73 @@
       <div class="transgrid" id="trans-grid"></div>
     </section>
 
+    <section class="panel" id="sec-wall">
+      <h2 class="ptitle">The Portrait Wall</h2>
+      <p class="psub">One frame a day from the Progress Portrait quest. Watch the story change.</p>
+      <div class="cigallery" id="pwall" style="margin-top:0"></div>
+    </section>
+
     <section class="panel" id="sec-guide">
       <h2 class="ptitle">Where the Tape Goes</h2>
       <p class="psub">Same spots every week — the trend is only as honest as the tape. Morning, unflexed, tape level, snug but never digging in.</p>
       <div style="display:flex;justify-content:center">
-      <svg viewBox="0 0 340 520" style="max-width:330px;width:100%" role="img" aria-label="Body diagram marking where each measurement is taken">
+      <svg viewBox="0 0 360 545" style="max-width:350px;width:100%" role="img" aria-label="Body diagram marking where each measurement is taken, left and right marked separately">
         <g fill="#3a2f5e" stroke="#5a4b8a" stroke-width="1.5" stroke-linejoin="round">
-          <ellipse cx="140" cy="36" rx="19" ry="23"/>
-          <path d="M130,56 L130,72 Q140,77 150,72 L150,56 Q140,62 130,56 Z"/>
-          <path d="M104,80
-                   C100,88 100,96 100,104 C101,116 102,122 102,128
-                   C103,150 106,174 108,196 C107,206 105,214 104,222
-                   C102,234 100,244 100,254 C100,268 101,280 102,290
-                   C104,308 106,324 107,340 C105,354 103,368 104,382
-                   C106,402 110,420 114,438 L113,450 Q120,456 130,454 L130,438
-                   C129,420 128,402 128,386 C129,370 130,356 130,344
-                   C131,326 133,310 135,296 C137,286 139,278 140,272
-                   C141,278 143,286 145,296 C147,310 149,326 150,344
-                   C150,356 151,370 152,386 C152,402 151,420 150,438 L150,454 Q160,456 167,450 L166,438
-                   C170,420 174,402 176,382 C177,368 175,354 173,340
-                   C174,324 176,308 178,290 C179,280 180,268 180,254
-                   C180,244 178,234 176,222 C175,214 173,206 172,196
-                   C174,174 177,150 178,128 C178,122 179,116 180,104
-                   C180,96 180,88 176,80 C166,73 114,73 104,80 Z"/>
-          <path d="M100,92 C92,100 87,112 84,126 C81,142 80,158 79,176 C78,196 77,214 77,232 C77,244 78,254 81,260 Q86,264 88,258 C90,250 91,240 91,230 C92,212 93,196 94,178 C95,160 96,144 98,128 C99,116 100,104 102,96 Z"/>
-          <path d="M180,92 C188,100 193,112 196,126 C199,142 200,158 201,176 C202,196 203,214 203,232 C203,244 202,254 199,260 Q194,264 192,258 C190,250 189,240 189,230 C188,212 187,196 186,178 C185,160 184,144 182,128 C181,116 180,104 178,96 Z"/>
+          <ellipse cx="180" cy="36" rx="19" ry="23"/>
+          <path d="M170,56 L170,72 Q180,77 190,72 L190,56 Q180,62 170,56 Z"/>
+          <path d="M144,80
+                   C140,88 140,96 140,104 C141,116 142,122 142,128
+                   C143,150 146,174 148,196 C147,206 145,214 144,222
+                   C142,234 140,244 140,254 C140,268 141,280 142,290
+                   C144,308 146,324 147,340 C145,354 143,368 144,382
+                   C146,402 150,420 154,438 L153,450 Q160,456 170,454 L170,438
+                   C169,420 168,402 168,386 C169,370 170,356 170,344
+                   C171,326 173,310 175,296 C177,286 179,278 180,272
+                   C181,278 183,286 185,296 C187,310 189,326 190,344
+                   C190,356 191,370 192,386 C192,402 191,420 190,438 L190,454 Q200,456 207,450 L206,438
+                   C210,420 214,402 216,382 C217,368 215,354 213,340
+                   C214,324 216,308 218,290 C219,280 220,268 220,254
+                   C220,244 218,234 216,222 C215,214 213,206 212,196
+                   C214,174 217,150 218,128 C218,122 219,116 220,104
+                   C220,96 220,88 216,80 C206,73 154,73 144,80 Z"/>
+          <path d="M140,92 C132,100 127,112 124,126 C121,142 120,158 119,176 C118,196 117,214 117,232 C117,244 118,254 121,260 Q126,264 128,258 C130,250 131,240 131,230 C132,212 133,196 134,178 C135,160 136,144 138,128 C139,116 140,104 142,96 Z"/>
+          <path d="M220,92 C228,100 233,112 236,126 C239,142 240,158 241,176 C242,196 243,214 243,232 C243,244 242,254 239,260 Q234,264 232,258 C230,250 229,240 229,230 C228,212 227,196 226,178 C225,160 224,144 222,128 C221,116 220,104 218,96 Z"/>
         </g>
-        <g stroke="var(--gold, #c9a445)" stroke-width="1.4" stroke-dasharray="5 3">
-          <line x1="129" y1="64" x2="151" y2="64"/><line x1="151" y1="64" x2="216" y2="60"/>
-          <line x1="101" y1="128" x2="179" y2="128"/><line x1="179" y1="128" x2="216" y2="124"/>
-          <line x1="182" y1="152" x2="200" y2="152"/><line x1="200" y1="152" x2="216" y2="156"/>
-          <line x1="107" y1="196" x2="173" y2="196"/><line x1="173" y1="196" x2="216" y2="192"/>
-          <line x1="103" y1="222" x2="177" y2="222"/><line x1="177" y1="222" x2="216" y2="220"/>
-          <line x1="100" y1="254" x2="180" y2="254"/><line x1="180" y1="254" x2="216" y2="252"/>
-          <line x1="102" y1="298" x2="136" y2="298"/><line x1="136" y1="298" x2="216" y2="294"/>
-          <line x1="104" y1="388" x2="129" y2="388"/><line x1="129" y1="388" x2="216" y2="384"/>
+        <g stroke="var(--gold, #c9a445)" stroke-width="1.4" stroke-dasharray="5 3" stroke-linecap="round">
+          <line x1="169" y1="64" x2="254" y2="64"/>
+          <line x1="141" y1="128" x2="254" y2="128"/>
+          <line x1="222" y1="152" x2="254" y2="152"/>
+          <line x1="138" y1="152" x2="106" y2="152"/>
+          <line x1="144" y1="214" x2="254" y2="214"/>
+          <line x1="141" y1="240" x2="254" y2="240"/>
+          <line x1="140" y1="254" x2="254" y2="254"/>
+          <line x1="184" y1="300" x2="254" y2="300"/>
+          <line x1="176" y1="300" x2="106" y2="300"/>
+          <line x1="192" y1="392" x2="254" y2="392"/>
+          <line x1="169" y1="392" x2="106" y2="392"/>
         </g>
         <g fill="var(--gold-hi, #eed171)" font-size="12" font-weight="600" font-family="inherit">
-          <text x="220" y="64">NECK</text>
-          <text x="220" y="128">CHEST</text>
-          <text x="220" y="160">ARM L/R</text>
-          <text x="220" y="196">WAIST</text>
-          <text x="220" y="224">STOMACH</text>
-          <text x="220" y="256">HIPS</text>
-          <text x="220" y="298">THIGH L/R</text>
-          <text x="220" y="388">CALF L/R</text>
+          <text x="258" y="68">NECK</text>
+          <text x="258" y="132">CHEST</text>
+          <text x="258" y="156">R ARM</text>
+          <text x="102" y="156" text-anchor="end">L ARM</text>
+          <text x="258" y="218">STOMACH</text>
+          <text x="258" y="244">WAIST</text>
+          <text x="258" y="258">HIPS</text>
+          <text x="258" y="304">R THIGH</text>
+          <text x="102" y="304" text-anchor="end">L THIGH</text>
+          <text x="258" y="396">R CALF</text>
+          <text x="102" y="396" text-anchor="end">L CALF</text>
         </g>
+        <text x="180" y="530" text-anchor="middle" fill="var(--ink-faint, #8f85ab)" font-size="10.5" font-family="inherit">shown as you see yourself in the mirror — your left is on the left</text>
       </svg>
       </div>
       <div style="font-size:12.5px;color:var(--ink-mut);line-height:1.7;margin-top:6px">
         <b style="color:var(--ink)">Neck</b> — just below the Adam's apple, tape sloping slightly down at the front ·
         <b style="color:var(--ink)">Chest</b> — across the nipple line, mid-breath ·
         <b style="color:var(--ink)">Arm</b> — at the biceps' widest point, arm hanging relaxed ·
-        <b style="color:var(--ink)">Waist</b> — the narrowest point, above the navel ·
-        <b style="color:var(--ink)">Stomach</b> — level across the navel ·
+        <b style="color:var(--ink)">Stomach</b> — level with the navel, across the belly ·
+        <b style="color:var(--ink)">Waist</b> — at the trouser line, just below the navel, where your pants sit ·
         <b style="color:var(--ink)">Hips</b> — around the widest point of the glutes ·
         <b style="color:var(--ink)">Thigh</b> — at the highest point, just below the glute fold ·
         <b style="color:var(--ink)">Calf</b> — at its widest point, standing with weight even.
@@ -698,6 +741,8 @@
       <a href="#sec-weekly">Training</a>
       <a href="#sec-reframe">Reframe</a>
       <a href="#sec-purse">Purse</a>
+      <a href="#sec-table">Meals</a>
+      <a href="#sec-ember">Flames</a>
       <a href="#sec-side">Side</a>
       <a href="#sec-victory">Victory</a>
       <a href="#sec-boss">Boss</a>
@@ -747,16 +792,33 @@
           </div>
         </section>
 
-        <section class="panel" id="sec-ember">
+        <section class="panel" id="sec-table">
           <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-            <h2 class="ptitle">The Ember</h2>
-            <span class="hintlbl" id="em-today" style="font-variant-numeric:tabular-nums"></span>
+            <h2 class="ptitle">The Table</h2>
+            <span class="hintlbl" id="tb-today" style="font-variant-numeric:tabular-nums"></span>
           </div>
-          <p class="psub">The old flame. Tap it the moment you give in — the toll grows with each one in a day, and an honest count is the only count worth keeping.</p>
-          <div class="addreward" style="align-items:center;flex-wrap:wrap">
+          <p class="psub">Log each meal the moment you eat it — five seconds, any number of times a day. The Clean Feast debrief at night finds them already on the table.</p>
+          <div class="addreward">
+            <input type="time" id="tb-at" style="flex:none;width:110px" aria-label="Meal time">
+            <input type="text" id="tb-what" placeholder="What did you eat?" maxlength="120" aria-label="What you ate">
+            <button class="btn btn-sm" id="tb-add" type="button">Log</button>
+          </div>
+        </section>
+
+        <section class="panel" id="sec-ember">
+          <h2 class="ptitle">The Ember &amp; The Siren</h2>
+          <p class="psub">The two old flames being buried this arc. Tap the moment either wins — the toll grows with each one in a day, comes off your whole XP, and an honest count is the only count worth keeping.</p>
+          <div class="addreward" style="align-items:center;flex-wrap:wrap;margin-bottom:8px">
             <button class="btn btn-sm" id="em-add" type="button" style="border-color:#7a3a3a;color:#e8b4b4">🔥 It burned</button>
             <button class="btn-ghost" id="em-undo" type="button" style="padding:6px 12px;font-size:12.5px">Undo</button>
+            <span class="hintlbl" id="em-today" style="font-variant-numeric:tabular-nums"></span>
             <span class="hintlbl" id="em-streak"></span>
+          </div>
+          <div class="addreward" style="align-items:center;flex-wrap:wrap">
+            <button class="btn btn-sm" id="si-add" type="button" style="border-color:#3a4f7a;color:#b4c8e8">🌊 It sang</button>
+            <button class="btn-ghost" id="si-undo" type="button" style="padding:6px 12px;font-size:12.5px">Undo</button>
+            <span class="hintlbl" id="si-today" style="font-variant-numeric:tabular-nums"></span>
+            <span class="hintlbl" id="si-streak"></span>
           </div>
         </section>
 
@@ -940,6 +1002,21 @@
       <div id="chap-list"></div>
     </section>
 
+    <section class="panel" id="sec-cal">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <h2 class="ptitle">The Campaign Map</h2>
+        <span style="display:flex;gap:6px;align-items:center">
+          <button class="btn-ghost" id="cal-prev" type="button" style="padding:3px 11px;font-size:14px" aria-label="Previous month">‹</button>
+          <b id="cal-month" style="font-family:var(--disp);font-size:12.5px;letter-spacing:.1em;color:var(--gold-hi);min-width:76px;text-align:center"></b>
+          <button class="btn-ghost" id="cal-next" type="button" style="padding:3px 11px;font-size:14px" aria-label="Next month">›</button>
+        </span>
+      </div>
+      <p class="psub">Every day of the arc at a glance — gold is a perfect day, embers mark the gaps. Tap a day to see what was done and what wasn't.</p>
+      <div class="calhead"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+      <div class="calgrid" id="cal-grid"></div>
+      <div id="cal-detail"></div>
+    </section>
+
     <section class="panel">
       <h2 class="ptitle">Day Sheet</h2>
       <p class="psub">Every day on one line — the march, the walking hours, the night, the spirit.</p>
@@ -1000,7 +1077,7 @@
 
     <section class="panel">
       <h2 class="ptitle">Training Record</h2>
-      <p class="psub">Every run, ride, and iron session with its numbers.</p>
+      <p class="psub">Every run, ride, and iron session with its numbers. Tap ✎ on any row to correct it after saving.</p>
       <div class="yearhead">Runs</div>
       <div class="tscroll"><table class="rectable" id="run-table"></table></div>
       <div class="yearhead" style="margin-top:16px">Rides</div>
@@ -1022,6 +1099,13 @@
       <p class="psub">Every time the old flame won — when, how often, and what it cost. The empty rows are the victory.</p>
       <div id="ember-note" class="hintlbl" style="margin-bottom:8px"></div>
       <div class="tscroll"><table class="rectable" id="ember-table"></table></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="ptitle">Siren Ledger</h2>
+      <p class="psub">Every time the siren sang — when, how often, and what it cost. Silence is the win.</p>
+      <div id="siren-note" class="hintlbl" style="margin-bottom:8px"></div>
+      <div class="tscroll"><table class="rectable" id="siren-table"></table></div>
     </section>
 
     <section class="panel">
@@ -1442,7 +1526,32 @@
     { id:"still21", n:"Still for 21",       d:"21 days of meditation in a row", xp:75, c:function(){ return bestOf("d-med") >= 21; } },
     { id:"mirror4", n:"Faithful Mirror",    d:"Four weekly check-ins", xp:25, c:function(){ return state.checkins.length >= 4; } },
     { id:"examined",n:"The Examined Life",  d:"Four reckonings sealed", xp:50, c:function(){ return state.reviews.length >= 4; } },
-    { id:"hoard",   n:"Dragon's Hoard",     d:"Hold 5,000 gold at once", xp:50, c:function(){ return state.coins >= 5000; } }
+    { id:"hoard",   n:"Dragon's Hoard",     d:"Hold 5,000 gold at once", xp:50, c:function(){ return state.coins >= 5000; } },
+    { id:"unlit7",  n:"Seven Unlit",        d:"7 days without the ember", xp:50, c:function(){ return habitLongestClean("ember") >= 7; } },
+    { id:"coldmoon",n:"The Cold Moon",      d:"30 days without the ember", xp:150, c:function(){ return habitLongestClean("ember") >= 30; } },
+    { id:"deafsong",n:"Deaf to the Siren",  d:"21 days with the vow unbroken", xp:100, c:function(){ return habitLongestClean("siren") >= 21; } },
+    { id:"iron50k", n:"Fifty Tonnes",       d:"50,000 kg of iron moved", xp:100, c:function(){
+        return gymSlog().reduce(function(a, e){ return a + (e.vol != null ? e.vol : (e.lifts || []).reduce(function(b, l){ return b + liftVol(l); }, 0)); }, 0) >= 50000; } },
+    { id:"iron100k",n:"The Mountain Moved", d:"100,000 kg of iron moved", xp:200, c:function(){
+        return gymSlog().reduce(function(a, e){ return a + (e.vol != null ? e.vol : (e.lifts || []).reduce(function(b, l){ return b + liftVol(l); }, 0)); }, 0) >= 100000; } },
+    { id:"road300", n:"Three Hundred Roads",d:"300 km run in the arc", xp:150, c:function(){
+        return runSlog().reduce(function(a, e){ return a + (e.km || 0); }, 0) >= 300; } },
+    { id:"slowdrum",n:"The Slow Drum",      d:"Resting heart rate at 65 or under", xp:100, c:function(){
+        return state.body.some(function(e){ return e.vitals && e.vitals.rhr && e.vitals.rhr <= 65; }); } },
+    { id:"gate30",  n:"The Gate of Thirty", d:"BMI under 30", xp:150, c:function(){
+        return state.body.some(function(e){ return bmiOf(e.kg) < 30; }); } },
+    { id:"wk100k",  n:"A Hundred Thousand", d:"100k steps inside one week", xp:75, c:function(){
+        var q = state.quests.find(function(x){ return x.kind === "counter"; });
+        if (!q || !q.log) return false;
+        var days = Object.keys(q.log).sort();
+        for (var i = 0; i < days.length; i++){
+          var end = addDays(days[i], 6), s = 0;
+          for (var j = i; j < days.length && days[j] <= end; j++) s += q.log[days[j]];
+          if (s >= 100000) return true;
+        }
+        return false; } },
+    { id:"night30", n:"Thirty Nights",      d:"30 night-journal entries", xp:75, c:function(){ return (state.journal || []).length >= 30; } },
+    { id:"newrec",  n:"The Record Breaker", d:"Set 10 lifting records", xp:100, c:function(){ return (state.prCount || 0) >= 10; } }
   ];
   function checkTrophies(){
     if (window.__viewMode) return;
@@ -1510,21 +1619,21 @@
   function monthBooks(m){ return state.books.filter(function(b){ var d = bookDate(b); return d && d.slice(0, 7) === m; }).length; }
   function bossFor(m){
     switch (m){
-      case "2026-09": return { name: "The Sloth of Old Habits", flavor: "It whispers “tomorrow.” Give it nothing.", conds: [
+      case "2026-09": return { name: "The Sloth of Old Habits", xp: 400, flavor: "It whispers “tomorrow.” Give it nothing.", conds: [
         { l: "Days with 8+ quests done", cur: monthDaysWith(m, 8), need: 18 },
         { l: "A long run of 8 km", cur: monthLongestRun(m), need: 8 },
         { l: "Weekly check-ins", cur: monthCheckins(m), need: 4 }] };
-      case "2026-10": return { name: "The Grey King", flavor: "The plateau. It wins when you coast.", conds: [
+      case "2026-10": return { name: "The Grey King", xp: 550, flavor: "The plateau. It wins when you coast.", conds: [
         { l: "Days with 8+ quests done", cur: monthDaysWith(m, 8), need: 20 },
         { l: "A long run of 12 km", cur: monthLongestRun(m), need: 12 },
         { l: "Kilograms shed this month", cur: monthWeightDrop(m), need: 3 },
         { l: "Training sessions", cur: monthSessionsOf(m), need: 14 }] };
-      case "2026-11": return { name: "The Long Dark", flavor: "Motivation is gone. Only the system remains.", conds: [
+      case "2026-11": return { name: "The Long Dark", xp: 700, flavor: "Motivation is gone. Only the system remains.", conds: [
         { l: "Days with 8+ quests done", cur: monthDaysWith(m, 8), need: 22 },
         { l: "A long run of 15 km", cur: monthLongestRun(m), need: 15 },
         { l: "Average sleep (hours)", cur: Math.round(monthAvgSleep(m) * 10) / 10, need: 7 },
         { l: "Books shelved this month", cur: monthBooks(m), need: 2 }] };
-      case "2026-12": return { name: "The Winter Lord", flavor: "The arc's final gate. Everything you built, spent at once.", conds: [
+      case "2026-12": return { name: "The Winter Lord", xp: 1000, flavor: "The arc's final gate. Everything you built, spent at once.", conds: [
         { l: "An 18 km long run (ever)", cur: longestRun(), need: 18 },
         { l: "Victory bars filled", cur: victoryData().filter(function(v){ return v.pct >= 1; }).length, need: 3 },
         { l: "Training sessions", cur: monthSessionsOf(m), need: 14 }] };
@@ -1538,9 +1647,10 @@
     if (!b || state.bosses[m]) return;
     if (b.conds.every(function(c){ return c.cur >= c.need; })){
       state.bosses[m] = todayStr();
-      award("hab", 300);
-      addLog("⚔ <b>BOSS FELLED: " + b.name + "</b> +300 XP");
-      toast("⚔ BOSS FELLED — " + b.name.toUpperCase() + " · +300 XP ⚔", true);
+      var bxp = b.xp || 300;
+      award("hab", bxp);
+      addLog("⚔ <b>BOSS FELLED: " + b.name + "</b> +" + bxp + " XP");
+      toast("⚔ BOSS FELLED — " + b.name.toUpperCase() + " · +" + bxp + " XP ⚔", true);
     }
   }
   function renderBoss(){
@@ -1551,7 +1661,7 @@
     var b = bossFor(inArc ? m : "2026-09");
     var sub = document.getElementById("boss-sub");
     if (!b){ el.innerHTML = '<div class="empty">No boss stirs this month.</div>'; sub.textContent = ""; return; }
-    sub.textContent = inArc ? "Fell it before the month ends — worth +300 XP." : "September's boss waits for the arc to open.";
+    sub.textContent = inArc ? "Fell it before the month ends — worth +" + ((bossFor(todayStr().slice(0, 7)) || {}).xp || 300) + " XP." : "September's boss waits for the arc to open.";
     var slain = state.bosses[m];
     el.innerHTML = '<div class="bossname">' + (slain ? "☠ " : "") + b.name + "</div>" +
       '<div class="bossflavor">' + b.flavor + "</div>" +
@@ -1705,10 +1815,10 @@
   function clampS(s){ return Math.max(0, Math.min(10, Math.round(s * 10) / 10)); }
   function shortName(t){ return t.split("—")[0].trim(); }
 
-  function mealRowHtml(at){
+  function mealRowHtml(at, what){
     return '<div class="liftrow">' +
       '<input type="time" class="m-at" value="' + (at || "") + '" style="max-width:110px" aria-label="Meal time">' +
-      '<input type="text" class="m-what" placeholder="What did you eat?" maxlength="120" style="flex:2" aria-label="What you ate">' +
+      '<input type="text" class="m-what" placeholder="What did you eat?" maxlength="120" value="' + esc(String(what || "")) + '" style="flex:2" aria-label="What you ate">' +
       "</div>";
   }
   // ---------- iron: per-set logging (Strong/Hevy style) ----------
@@ -1806,7 +1916,23 @@
   function exListHtml(){
     return '<datalist id="exlist">' + exNames().map(function(n){ return '<option value="' + esc(n) + '">'; }).join("") + "</datalist>";
   }
-  var gymEditIdx = null, exBookSel = null;
+  var gymEditIdx = null, exBookSel = null, sportEdit = null;
+  function sportEditFormHtml(id, e){
+    var isRun = id === "w-run";
+    return '<div style="border:1px solid var(--gold);border-radius:10px;padding:10px;text-align:left">' +
+      '<div class="hintlbl" style="margin-bottom:7px">re-running the record of ' + esc(e.t) + "</div>" +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">' +
+      (isRun ? '<select id="se-type" class="tin">' + ["easy","quality","long"].map(function(o){
+        return '<option value="' + o + '"' + (e.type === o ? " selected" : "") + ">" + o + "</option>";
+      }).join("") + "</select>" : "") +
+      '<input type="number" id="se-km" class="tin" value="' + e.km + '" min="0.5" max="500" step="0.1" placeholder="km" aria-label="Distance km">' +
+      '<input type="number" id="se-min" class="tin" value="' + e.min + '" min="5" max="600" placeholder="min" aria-label="Time minutes">' +
+      (isRun ? '<input type="number" id="se-hr" class="tin" value="' + (e.hr || "") + '" min="60" max="220" placeholder="avg HR (optional)" aria-label="Average heart rate">' +
+               '<input type="number" id="se-cad" class="tin" value="' + (e.cad || "") + '" min="100" max="230" placeholder="cadence (optional)" aria-label="Cadence">' : "") +
+      "</div>" +
+      '<div class="erow2" style="margin-top:9px"><button class="btn btn-sm" data-ssave="1" type="button">Save changes</button>' +
+      '<button class="btn-ghost" data-scancel="1" type="button" style="padding:6px 12px">Cancel</button></div></div>';
+  }
   function gymEditFormHtml(e){
     return '<div style="border:1px solid var(--gold);border-radius:10px;padding:10px;text-align:left">' +
       '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap"><label class="hintlbl" for="ge-min">Minutes</label>' +
@@ -1952,6 +2078,7 @@
         var summary = lifts.slice(0, 3).map(function(l){ return esc(l.name) + " " + fmtSets(l.sets.slice(0, 3)) + (l.sets.length > 3 ? "…" : ""); }).join(" · ");
         addLog("Forged iron " + mn + " min · <b>" + vol.toLocaleString() + " kg moved</b>" + (summary ? " — " + summary + (lifts.length > 3 ? " +" + (lifts.length - 3) + " more" : "") : ""));
         if (prs.length){
+          state.prCount = (state.prCount || 0) + prs.length;
           award("fit", 10 * prs.length);
           addLog("🏆 <b>New record:</b> " + esc(prs.join(", ")) + " <b>+" + 10 * prs.length + " XP</b>");
           toast("🏆 NEW RECORD — " + esc(prs[0]) + (prs.length > 1 ? " +" + (prs.length - 1) + " more" : "") + " · +" + 10 * prs.length + " XP", true);
@@ -2428,11 +2555,37 @@
         score: function(){ return clampS(Math.min(6, num("m-a1") / 45 * 6) + Number(val("m-a2"))); },
         commit: function(){ addLog(num("m-a1") + " min in the open air"); painCommit("Open air"); }
       };
+      case "d-photo": return {
+        title: "Progress Portrait", sub: "One frame of today's face of the work. December strings them into a story.",
+        fields: function(){
+          pendingPortrait = null;
+          return fld('<label>Today\'s portrait</label>' +
+            '<label class="photoslot" style="max-width:140px;min-height:120px;margin:4px 0"><span>today</span>' +
+            '<input type="file" accept="image/*" capture="user" id="pp-in" hidden><img alt="" hidden></label>' +
+            '<div class="hintlbl">Same spot, same light if you can — comparison is the point.</div>');
+        },
+        score: function(){
+          if (!pendingPortrait){ toast("The portrait is the quest — add today\'s photo first."); return false; }
+          return 8;
+        },
+        commit: function(){
+          state.portraits = state.portraits || [];
+          state.portraits = state.portraits.filter(function(p){ return p.t !== todayStr(); });
+          state.portraits.unshift({ t: todayStr(), img: pendingPortrait });
+          if (state.portraits.length > 135) state.portraits.length = 135;
+          pendingPortrait = null;
+          addLog("Portrait of the day taken \u2014 " + state.portraits.length + " on the wall");
+        }
+      };
       case "d-diet": return {
         title: "The Clean Feast", sub: "The diet holds only if it holds every meal. What did you eat, and when?",
         fields: function(){
-          return fld('<label>Today\'s meals — time and what you ate</label><div id="meal-rows">' +
-              mealRowHtml("08:30") + mealRowHtml("13:00") + mealRowHtml("20:00") + "</div>" +
+          var tm = state.meals.find(function(e){ return e.t === todayStr(); });
+          var mrows = (tm && tm.items.length)
+            ? tm.items.map(function(it){ return mealRowHtml(it.at, it.what); }).join("") + mealRowHtml("")
+            : mealRowHtml("08:30") + mealRowHtml("13:00") + mealRowHtml("20:00");
+          return fld('<label>Today\'s meals — logged at The Table through the day, or fill them in now</label><div id="meal-rows">' +
+              mrows + "</div>" +
               '<button type="button" class="btn-ghost" data-mact="addmeal" style="padding:5px 12px;font-size:13px">＋ Add a meal</button>') +
             '<div class="mgrid">' +
             selFld("m-a1", "Meals on plan?", [["5","Every meal clean"],["2","One slip"],["0","Broke the diet"]]) +
@@ -2449,10 +2602,10 @@
             items.push({ at: row.querySelector(".m-at").value || "", what: what });
           });
           if (items.length){
-            state.meals = state.meals || [];
+            state.meals = (state.meals || []).filter(function(e){ return e.t !== todayStr(); });
             state.meals.unshift({ t: todayStr(), items: items });
             if (state.meals.length > 60) state.meals.length = 60;
-            addLog("Feast logged: " + items.length + " meal" + (items.length > 1 ? "s" : ""));
+            addLog("Feast sealed: " + items.length + " meal" + (items.length > 1 ? "s" : ""));
           }
         }
       };
@@ -3290,6 +3443,83 @@
   });
   document.getElementById("wr-cancel").addEventListener("click", function(){ wrTarget = null; wrModal.hidden = true; });
 
+  // ---------- the campaign map (calendar) ----------
+  var calMonth = null, calSel = null;
+  function calDayStatus(d){
+    var arc = state.arc, today = todayStr();
+    if (d > today) return { cls: "c-fut", mark: "" };
+    if (arc && ((arc.shelterDays && arc.shelterDays[d]) || (arc.shelterFrom && d >= arc.shelterFrom))) return { cls: "c-shel", mark: "⛺" };
+    var L = calDueList(d);
+    if (!L.length) return { cls: "", mark: "·" };
+    var done = L.filter(function(x){ return x.done; }).length;
+    var pct = done / L.length;
+    if (pct === 1) return { cls: "c-full", mark: "✦" };
+    if (pct >= 0.6) return { cls: "c-most", mark: done + "/" + L.length };
+    if (pct > 0) return { cls: "c-some", mark: done + "/" + L.length };
+    return { cls: "c-none", mark: "0/" + L.length };
+  }
+  function calDueList(d){
+    var arc = state.arc, dow = new Date(d + "T12:00:00").getDay(), out = [];
+    state.quests.forEach(function(q){
+      if (q.type !== "daily") return;
+      if (q.created && d < q.created) return;
+      if (arc && dow === arc.restDay && (q.id === "d-out" || q.id === "d-steps")) return;
+      if (q.days && q.days.length && q.days.indexOf(dow) === -1) return;
+      var done = q.kind ? ((q.log && q.log[d]) || 0) >= q.target : !!((q.doneLog && q.doneLog[d]) || q.lastDone === d);
+      out.push({ q: q, done: done });
+    });
+    return out;
+  }
+  function renderCalendar(){
+    var grid = document.getElementById("cal-grid");
+    if (!grid) return;
+    if (!calMonth) calMonth = todayStr().slice(0, 7);
+    var y = Number(calMonth.slice(0, 4)), mo = Number(calMonth.slice(5, 7));
+    document.getElementById("cal-month").textContent = monthName(calMonth).toUpperCase();
+    var lastD = new Date(y, mo, 0).getDate();
+    var firstDow = new Date(y, mo - 1, 1).getDay();
+    var html = "";
+    for (var b = 0; b < firstDow; b++) html += '<div class="calcell c-blank"></div>';
+    for (var i = 1; i <= lastD; i++){
+      var d = calMonth + "-" + String(i).padStart(2, "0");
+      var st = calDayStatus(d);
+      html += '<button type="button" class="calcell ' + st.cls + (calSel === d ? " c-sel" : "") + '" data-cald="' + d + '"' +
+        (st.cls === "c-fut" ? " disabled" : "") + ">" +
+        "<span>" + i + '</span><span class="cmark">' + st.mark + "</span></button>";
+    }
+    grid.innerHTML = html;
+    var det = document.getElementById("cal-detail");
+    if (!calSel){ det.innerHTML = ""; return; }
+    var L = calDueList(calSel);
+    var xp = state.xpDaily[calSel];
+    var toll = (state.tollLog || {})[calSel];
+    var sl = state.sleep.find(function(e){ return e.t === calSel; });
+    var stepsQ = state.quests.find(function(x){ return x.kind === "counter"; });
+    var stp = (stepsQ && stepsQ.log && stepsQ.log[calSel]) || 0;
+    det.innerHTML = '<div style="font-family:var(--disp);font-size:12px;letter-spacing:.12em;color:var(--gold);margin-bottom:4px">' + esc(calSel) +
+      (xp != null ? " · " + (xp > 0 ? "+" : "") + xp + " XP" : "") +
+      (toll ? ' · <span class="gap-over">toll −' + toll + "</span>" : "") +
+      (stp ? " · " + stp.toLocaleString() + " steps" : "") +
+      (sl ? " · slept " + sl.hours + "h" : "") + "</div>" +
+      (L.length ? L.map(function(x){
+        return '<div class="cd-q"><span>' + esc(shortName(x.q.title)) + "</span><span>" + (x.done ? "<b style='color:var(--gold-hi)'>✓ done</b>" : "<span class='gap-over'>✗ not done</span>") + "</span></div>";
+      }).join("") : '<div class="empty">Nothing was due that day.</div>') +
+      (calSel < todayStr() ? '<div class="hintlbl" style="margin-top:6px">Did something that day but forgot to log it? Use “Backfill a day” on the Quest Board.</div>' : "");
+  }
+  document.addEventListener("click", function(e){
+    var cd = e.target.closest && e.target.closest("[data-cald]");
+    if (cd){ calSel = calSel === cd.dataset.cald ? null : cd.dataset.cald; renderCalendar(); return; }
+    if (e.target.closest && e.target.closest("#cal-prev")){
+      var y2 = Number(calMonth.slice(0, 4)), m2 = Number(calMonth.slice(5, 7)) - 1;
+      if (m2 < 1){ m2 = 12; y2--; }
+      calMonth = y2 + "-" + String(m2).padStart(2, "0"); calSel = null; renderCalendar(); return;
+    }
+    if (e.target.closest && e.target.closest("#cal-next")){
+      var y3 = Number(calMonth.slice(0, 4)), m3 = Number(calMonth.slice(5, 7)) + 1;
+      if (m3 > 12){ m3 = 1; y3++; }
+      calMonth = y3 + "-" + String(m3).padStart(2, "0"); calSel = null; renderCalendar(); return;
+    }
+  });
   function renderDaySheet(){
     var el = document.getElementById("daysheet-table");
     if (!el) return;
@@ -3322,6 +3552,7 @@
       (rows.length ? rows.join("") : '<tr><td colspan="10"><i>The sheet fills as the days are logged.</i></td></tr>');
   }
   function renderRecords(){
+    renderCalendar();
     renderDaySheet();
     renderTrends();
     renderReckoning();
@@ -3350,13 +3581,16 @@
     function sportTable(id, elId, speedLabel){
       var rows = slogOf(id).slice(0, 14);
       var isRun = id === "w-run";
+      var cols = isRun ? 9 : 7;
       document.getElementById(elId).innerHTML =
-        "<tr><th>Date</th><th>Type</th><th>Km</th><th>Time</th><th>Pace</th><th>" + speedLabel + "</th>" + (isRun ? "<th>HR</th><th>Cad</th>" : "") + "</tr>" +
-        (rows.length ? rows.map(function(e){
+        "<tr><th>Date</th><th>Type</th><th>Km</th><th>Time</th><th>Pace</th><th>" + speedLabel + "</th>" + (isRun ? "<th>HR</th><th>Cad</th>" : "") + "<th></th></tr>" +
+        (rows.length ? rows.map(function(e, si){
           return "<tr><td>" + esc(e.t.slice(5)) + "</td><td>" + (e.type ? esc(e.type) : "—") + "</td><td><b>" + e.km + "</b></td><td>" + e.min + " min</td><td>" +
             esc(e.pace) + " /km</td><td>" + e.speed + " km/h</td>" +
-            (isRun ? "<td>" + (e.hr || "—") + "</td><td>" + (e.cad || "—") + "</td>" : "") + "</tr>";
-        }).join("") : '<tr><td colspan="' + (isRun ? 8 : 6) + '"><i>Nothing logged yet.</i></td></tr>');
+            (isRun ? "<td>" + (e.hr || "—") + "</td><td>" + (e.cad || "—") + "</td>" : "") +
+            '<td><button class="qedit" data-sedit="' + id + ":" + si + '" aria-label="Edit this session">✎</button></td></tr>' +
+            (sportEdit && sportEdit.id === id && sportEdit.idx === si ? '<tr><td colspan="' + cols + '">' + sportEditFormHtml(id, e) + "</td></tr>" : "");
+        }).join("") : '<tr><td colspan="' + cols + '"><i>Nothing logged yet.</i></td></tr>');
     }
     var pains = state.niggles.slice(0, 14);
     document.getElementById("pain-table").innerHTML =
@@ -3488,28 +3722,31 @@
           "<td>" + (e.deep ? e.deep + "h" : "—") + "</td><td>" + (e.rem ? e.rem + "h" : "—") + "</td>" +
           '<td class="qual-' + esc(e.quality) + '">' + esc(e.quality) + "</td><td>" + e.wakeups + "×</td></tr>";
       }).join("") : '<tr><td colspan="8"><i>No nights logged yet.</i></td></tr>');
-    var emEl = document.getElementById("ember-table");
-    if (emEl){
+    [["ember", "ember-table", "ember-note", "Nothing burned yet. Keep it that way.", "the ember has never won."],
+     ["siren", "siren-table", "siren-note", "Silence, so far. Keep it that way.", "the siren has never won."]].forEach(function(cfg){
+      var hEl = document.getElementById(cfg[1]);
+      if (!hEl) return;
+      var H = HABITS[cfg[0]];
       var byDay = {};
-      (state.embers || []).forEach(function(e){ (byDay[e.t] = byDay[e.t] || []).push(e); });
-      var emDays = Object.keys(byDay).sort().reverse().slice(0, 21);
-      emEl.innerHTML = "<tr><th>Date</th><th>Count</th><th>XP lost</th><th>When</th></tr>" +
-        (emDays.length ? emDays.map(function(d){
+      (state[H.key] || []).forEach(function(e){ (byDay[e.t] = byDay[e.t] || []).push(e); });
+      var hDays = Object.keys(byDay).sort().reverse().slice(0, 21);
+      hEl.innerHTML = "<tr><th>Date</th><th>Count</th><th>XP lost</th><th>When</th></tr>" +
+        (hDays.length ? hDays.map(function(d){
           var es = byDay[d];
           var lost = es.reduce(function(a, e){ return a + e.xp; }, 0);
           var times = es.map(function(e){ return e.at; }).sort().join(", ");
           return "<tr><td>" + esc(d.slice(5)) + "</td><td><b>" + es.length + "</b></td><td class=\"gap-over\">−" + lost + "</td><td>" + esc(times) + "</td></tr>";
-        }).join("") : '<tr><td colspan="4"><i>Nothing burned yet. Keep it that way.</i></td></tr>');
-      var emN = document.getElementById("ember-note");
-      if (emN){
-        var clean = emberCleanStreak();
-        var totalN = (state.embers || []).length;
-        var totalXP = (state.embers || []).reduce(function(a, e){ return a + e.xp; }, 0);
-        emN.textContent = totalN
-          ? totalN + " total · −" + totalXP + " XP" + (clean === 0 ? " · burned today" : clean === 1 ? " · clean today" : " · " + clean + " days unlit")
-          : "The ledger is empty — the ember has never won.";
+        }).join("") : '<tr><td colspan="4"><i>' + cfg[3] + "</i></td></tr>");
+      var nEl = document.getElementById(cfg[2]);
+      if (nEl){
+        var clean = habitCleanStreak(cfg[0]);
+        var totalN = (state[H.key] || []).length;
+        var totalXP = (state[H.key] || []).reduce(function(a, e){ return a + e.xp; }, 0);
+        nEl.textContent = totalN
+          ? totalN + " total · −" + totalXP + " XP" + (clean === 0 ? " · it won today" : clean === 1 ? " · clean today" : " · " + clean + " days " + H.clean)
+          : "The ledger is empty — " + cfg[4];
       }
-    }
+    });
 
     function histRows(q, fmt){
       if (!q || !q.log) return "";
@@ -3535,7 +3772,7 @@
   function renderAll(){
     renderHeader(); renderStats(); renderSpirit(); renderReframes(); renderPurse(); renderEmber(); renderBell(); renderQuests(); renderRewards(); renderVictory();
     renderBoss(); renderTrophies(); renderOmens();
-    renderBooks(); renderJournals(); renderTransform(); renderCheckins(); renderRecords(); renderLog();
+    renderBooks(); renderJournals(); renderTransform(); renderPortraits(); renderCheckins(); renderRecords(); renderLog();
   }
 
   // ---------- backfill mode (any past date) ----------
@@ -3630,6 +3867,35 @@
       refreshExHints(document.getElementById("gedit-rows"));
       return;
     }
+    var se = e.target.closest("[data-sedit]");
+    if (se){
+      var sp = se.dataset.sedit.split(":");
+      sportEdit = { id: sp[0], idx: Number(sp[1]) };
+      renderRecords();
+      return;
+    }
+    if (e.target.closest("[data-scancel]")){ sportEdit = null; renderRecords(); return; }
+    if (e.target.closest("[data-ssave]")){
+      var sed = sportEdit; sportEdit = null;
+      var skm = Math.round((Number(document.getElementById("se-km").value) || 0.5) * 10) / 10;
+      var smn = Math.max(5, Math.round(Number(document.getElementById("se-min").value) || 5));
+      var stEl = document.getElementById("se-type");
+      var shEl = document.getElementById("se-hr"), scEl = document.getElementById("se-cad");
+      mutate(function(){
+        var sq = state.quests.find(function(x){ return x.id === sed.id; });
+        var entry = sq && sq.slog && sq.slog[sed.idx];
+        if (entry){
+          entry.km = skm; entry.min = smn;
+          entry.speed = smn > 0 ? Math.round(skm / (smn / 60) * 10) / 10 : 0;
+          entry.pace = paceStr(smn, skm);
+          if (stEl) entry.type = stEl.value;
+          if (shEl){ var shv = Math.round(Number(shEl.value) || 0); if (shv) entry.hr = shv; else delete entry.hr; }
+          if (scEl){ var scv = Math.round(Number(scEl.value) || 0); if (scv) entry.cad = scv; else delete entry.cad; }
+          addLog((sed.id === "w-run" ? "Run" : "Ride") + " of " + entry.t + " re-run · " + skm + " km in " + smn + " min");
+        }
+      });
+      return;
+    }
     if (e.target.closest("[data-gcancel]")){ gymEditIdx = null; renderRecords(); return; }
     if (e.target.closest("[data-gsave]")){
       var gidx = gymEditIdx;
@@ -3659,7 +3925,7 @@
         else if (q.lastDone !== todayStr()){ openModal(q, false); }
         else { mutate(function(){ completeSimple(q); }); }
       } else if (act === "session"){
-        if (isDoneOn(q, vd)){ toast("Already logged for that day — rest, warrior."); }
+        if (isDoneOn(q, vd)){ toast("Already logged for that day. To change it, use the ✎ on that session in Records → Training Record."); }
         else if (ymode){ mutate(function(){ doSession(q, DIFF[q.diff].xp, vd); }); }
         else { openModal(q, true); }
       } else if (act === "logcnt"){
@@ -3881,66 +4147,116 @@
     if (e.key === "Enter") document.getElementById("sp-add").click();
   });
 
-  // ---------- the ember (a habit that costs) ----------
-  function emberToll(nToday){ return Math.min(25, 5 * nToday); }
-  function embersOn(d){ return (state.embers || []).filter(function(e){ return e.t === d; }); }
-  function emberCleanStreak(){
+  // ---------- the table (meals through the day) ----------
+  function renderTable(){
+    var el = document.getElementById("tb-today");
+    if (!el) return;
+    var tm = state.meals.find(function(e){ return e.t === todayStr(); });
+    el.textContent = tm && tm.items.length ? tm.items.length + " meal" + (tm.items.length > 1 ? "s" : "") + " today" : "nothing on the table yet";
+  }
+  document.getElementById("tb-add").addEventListener("click", function(){
+    var what = document.getElementById("tb-what").value.trim();
+    if (!what){ document.getElementById("tb-what").focus(); return; }
+    var at = document.getElementById("tb-at").value;
+    if (!at){
+      var now = new Date();
+      at = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+    }
+    mutate(function(){
+      state.meals = state.meals || [];
+      var tm = state.meals.find(function(e){ return e.t === todayStr(); });
+      if (!tm){ tm = { t: todayStr(), items: [] }; state.meals.unshift(tm); }
+      tm.items.push({ at: at, what: what });
+      if (state.meals.length > 60) state.meals.length = 60;
+      addLog("On the table (" + at + "): " + esc(what));
+      toast("🍽 Logged · " + tm.items.length + " meal" + (tm.items.length > 1 ? "s" : "") + " today");
+    });
+    document.getElementById("tb-what").value = "";
+    document.getElementById("tb-at").value = "";
+  });
+  document.getElementById("tb-what").addEventListener("keydown", function(e){
+    if (e.key === "Enter") document.getElementById("tb-add").click();
+  });
+
+  // ---------- the old flames (habits that cost) ----------
+  var HABITS = {
+    ember: { key: "embers", per: 5, cap: 25, glyph: "🔥", verb: "It burned", name: "The ember",
+             clean: "unlit", logMsg: "The ember burned" },
+    siren: { key: "sirens", per: 10, cap: 30, glyph: "🌊", verb: "It sang", name: "The siren",
+             clean: "unbroken", logMsg: "The siren sang" }
+  };
+  function habitToll(kind, nToday){ var H = HABITS[kind]; return Math.min(H.cap, H.per * nToday); }
+  function habitsOn(kind, d){ return (state[HABITS[kind].key] || []).filter(function(e){ return e.t === d; }); }
+  function embersOn(d){ return habitsOn("ember", d); }
+  function habitCleanStreak(kind){
     var n = 0, d = todayStr();
-    if (embersOn(d).length) return 0;
+    if (habitsOn(kind, d).length) return 0;
     d = addDays(d, -1);
     for (var i = 0; i < 400; i++){
       if (state.arc && d < state.arc.start) break;
-      if (embersOn(d).length) break;
+      if (habitsOn(kind, d).length) break;
       n++; d = addDays(d, -1);
     }
     return n + 1; // today (clean so far) counts
   }
-  function emberLongestClean(){
+  function habitLongestClean(kind){
     if (!state.arc) return 0;
     var best = 0, cur = 0, d = state.arc.start;
     var end = todayStr() < state.arc.end ? todayStr() : state.arc.end;
     while (d <= end){
-      if (embersOn(d).length){ cur = 0; } else { cur++; if (cur > best) best = cur; }
+      if (habitsOn(kind, d).length){ cur = 0; } else { cur++; if (cur > best) best = cur; }
       d = addDays(d, 1);
     }
     return best;
   }
-  function renderEmber(){
-    var el = document.getElementById("em-today");
+  function emberLongestClean(){ return habitLongestClean("ember"); }
+  function renderHabitRow(kind, pfx){
+    var el = document.getElementById(pfx + "-today");
     if (!el) return;
-    var tds = embersOn(todayStr());
+    var H = HABITS[kind];
+    var tds = habitsOn(kind, todayStr());
     var lost = tds.reduce(function(a, e){ return a + e.xp; }, 0);
-    el.textContent = tds.length ? tds.length + "× today · −" + lost + " XP" : "unlit today";
-    var btn = document.getElementById("em-add");
-    btn.textContent = "🔥 It burned (−" + emberToll(tds.length + 1) + " XP)";
-    var st = document.getElementById("em-streak");
-    var clean = emberCleanStreak();
-    st.textContent = clean > 1 ? "✧ " + clean + " days unlit" : tds.length ? "" : "clean so far today";
+    el.textContent = tds.length ? tds.length + "× today · −" + lost + " XP" : "quiet today";
+    document.getElementById(pfx + "-add").textContent = H.glyph + " " + H.verb + " (−" + habitToll(kind, tds.length + 1) + " XP)";
+    var st = document.getElementById(pfx + "-streak");
+    var clean = habitCleanStreak(kind);
+    st.textContent = clean > 1 ? "✧ " + clean + " days " + H.clean : "";
   }
-  document.getElementById("em-add").addEventListener("click", function(){
+  function renderEmber(){ renderHabitRow("ember", "em"); renderHabitRow("siren", "si"); renderTable(); }
+  function habitAdd(kind){
     mutate(function(){
-      state.embers = state.embers || [];
-      var n = embersOn(todayStr()).length + 1;
-      var xp = emberToll(n);
+      var H = HABITS[kind];
+      state[H.key] = state[H.key] || [];
+      var n = habitsOn(kind, todayStr()).length + 1;
+      var xp = habitToll(kind, n);
       var now = new Date();
       var at = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
-      state.embers.unshift({ t: todayStr(), at: at, xp: xp });
-      if (state.embers.length > 800) state.embers.length = 800;
+      state[H.key].unshift({ t: todayStr(), at: at, xp: xp });
+      if (state[H.key].length > 800) state[H.key].length = 800;
       revoke("hab", xp);
-      addLog("The ember burned (" + n + "× today) <b>−" + xp + " XP</b>");
-      toast("🔥 −" + xp + " XP · " + n + "× today<br>Logged honestly — that's the part that counts.");
+      addLog(H.logMsg + " (" + n + "× today) <b>−" + xp + " XP</b>");
+      if (kind === "siren"){
+        var vq = state.quests.find(function(x){ return x.id === "d-vow"; });
+        if (vq && vq.lastDone === todayStr()){ undoDone(vq); addLog("The Monk's Vow untied — the siren sang today"); }
+      }
+      toast(H.glyph + " −" + xp + " XP · " + n + "× today<br>Logged honestly — that's the part that counts.");
     });
-  });
-  document.getElementById("em-undo").addEventListener("click", function(){
-    var tds = embersOn(todayStr());
+  }
+  function habitUndo(kind){
+    var H = HABITS[kind];
+    var tds = habitsOn(kind, todayStr());
     if (!tds.length){ toast("Nothing to undo today."); return; }
     mutate(function(){
-      var idx = state.embers.findIndex(function(e){ return e.t === todayStr(); });
-      var gone = state.embers.splice(idx, 1)[0];
+      var idx = state[H.key].findIndex(function(e){ return e.t === todayStr(); });
+      var gone = state[H.key].splice(idx, 1)[0];
       award("hab", gone.xp);
-      addLog("Ember entry undone (+" + gone.xp + " XP back)");
+      addLog(H.name + " entry undone (+" + gone.xp + " XP back)");
     });
-  });
+  }
+  document.getElementById("em-add").addEventListener("click", function(){ habitAdd("ember"); });
+  document.getElementById("em-undo").addEventListener("click", function(){ habitUndo("ember"); });
+  document.getElementById("si-add").addEventListener("click", function(){ habitAdd("siren"); });
+  document.getElementById("si-undo").addEventListener("click", function(){ habitUndo("siren"); });
 
   function logComplaint(withGood){
     var bad = document.getElementById("rf-bad").value.trim();
@@ -4169,6 +4485,20 @@
   });
   // ---------- weekly check-in (The Mirror) ----------
   var pendingPhotos = {};
+  var pendingPortrait = null;
+  function compressPortrait(file, cb){
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function(){
+      var MAX = 380, s = Math.min(1, MAX / Math.max(img.width, img.height));
+      var c = document.createElement("canvas");
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      cb(c.toDataURL("image/jpeg", .55));
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); cb(null); };
+    img.src = url;
+  }
   function compressImage(file, cb){
     var img = new Image(), url = URL.createObjectURL(file);
     img.onload = function(){
@@ -4334,6 +4664,9 @@
       '<input type="number" class="tin" id="t-' + side + '-thighr" placeholder="R thigh in" step="0.1" value="' + v("thighR") + '">' +
       '<input type="number" class="tin" id="t-' + side + '-calfl" placeholder="L calf in" step="0.1" value="' + v("calfL") + '">' +
       '<input type="number" class="tin" id="t-' + side + '-calfr" placeholder="R calf in" step="0.1" value="' + v("calfR") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-hrv" placeholder="HRV ms" step="1" value="' + v("hrv") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-rhr" placeholder="Resting HR" step="1" value="' + v("rhr") + '">' +
+      '<input type="number" class="tin" id="t-' + side + '-vo2" placeholder="VO₂ max" step="0.1" value="' + v("vo2") + '">' +
       "</div>" +
       '<button class="btn btn-sm" data-tseal="' + side + '" type="button" style="width:100%;margin-top:9px">Seal ' + label + "</button></div>";
   }
@@ -4352,8 +4685,18 @@
       (d.hips ? " · hips <b>" + d.hips + "</b>" : "") +
       ((d.armL || d.armR) ? " · arms <b>" + (d.armL || "—") + "/" + (d.armR || "—") + "</b>" : d.arm ? " · arm <b>" + d.arm + "</b>" : "") +
       ((d.thighL || d.thighR) ? " · thighs <b>" + (d.thighL || "—") + "/" + (d.thighR || "—") + "</b>" : "") +
-      ((d.calfL || d.calfR) ? " · calves <b>" + (d.calfL || "—") + "/" + (d.calfR || "—") + "</b>" : "") + "</div>" +
+      ((d.calfL || d.calfR) ? " · calves <b>" + (d.calfL || "—") + "/" + (d.calfR || "—") + "</b>" : "") +
+      (d.hrv ? " · HRV <b>" + d.hrv + "</b>" : "") + (d.rhr ? " · RHR <b>" + d.rhr + "</b>" : "") + (d.vo2 ? " · VO₂ <b>" + d.vo2 + "</b>" : "") + "</div>" +
       '<button class="btn-ghost" data-tredo="' + side + '" type="button" style="width:100%;margin-top:8px;padding:5px;font-size:12px">✎ Retake</button></div>';
+  }
+  function renderPortraits(){
+    var el = document.getElementById("pwall");
+    if (!el) return;
+    var ps = (state.portraits || []).slice(0, 28);
+    el.innerHTML = ps.length ? ps.map(function(p){
+      return '<div style="position:relative"><img src="' + p.img + '" alt="Portrait ' + esc(p.t) + '" loading="lazy">' +
+        '<span style="position:absolute;left:0;right:0;bottom:3px;text-align:center;font-size:9.5px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.95);font-family:var(--disp);letter-spacing:.08em">' + esc(p.t.slice(5)) + "</span></div>";
+    }).join("") : '<div class="empty">The wall is bare. Today\'s portrait hangs first \u2014 take it in the Progress Portrait quest.</div>';
   }
   function renderTransform(){
     var el = document.getElementById("trans-grid");
@@ -4386,6 +4729,18 @@
     el.innerHTML = html;
   }
   document.addEventListener("change", function(e){
+    if (e.target && e.target.id === "pp-in"){
+      var pf = e.target.files && e.target.files[0];
+      if (!pf) return;
+      var pslot = e.target.closest(".photoslot");
+      compressPortrait(pf, function(dataUrl){
+        if (!dataUrl){ toast("Couldn't read that image."); return; }
+        pendingPortrait = dataUrl;
+        var pim = pslot.querySelector("img");
+        pim.src = dataUrl; pim.hidden = false; pslot.classList.add("filled");
+      });
+      return;
+    }
     var inp = e.target.closest && e.target.closest(".tpin");
     if (!inp) return;
     var f = inp.files && inp.files[0];
@@ -4425,6 +4780,9 @@
           thighR: Number(document.getElementById("t-" + side + "-thighr").value) || undefined,
           calfL: Number(document.getElementById("t-" + side + "-calfl").value) || undefined,
           calfR: Number(document.getElementById("t-" + side + "-calfr").value) || undefined,
+          hrv: Number(document.getElementById("t-" + side + "-hrv").value) || undefined,
+          rhr: Number(document.getElementById("t-" + side + "-rhr").value) || undefined,
+          vo2: Number(document.getElementById("t-" + side + "-vo2").value) || undefined,
           photos: photos
         };
         award("hab", side === "start" ? 50 : 200);
@@ -4492,12 +4850,14 @@
       if (cS || cE) html += '<div class="srow"><span>Calves L/R</span><span>' + (cS || "—") + " → <b>" + (cE || "—") + "</b> in</span></div>";
     }
     var vitAll = state.body.filter(function(x){ return x.vitals && (x.vitals.hrv || x.vitals.rhr || x.vitals.vo2 || x.vitals.rec); });
-    if (vitAll.length){
+    var TT = state.transform || {};
+    if (vitAll.length || (TT.start && (TT.start.hrv || TT.start.rhr || TT.start.vo2)) || (TT.end && (TT.end.hrv || TT.end.rhr || TT.end.vo2))){
       html += "<h4>The Engine</h4>";
       ["hrv","rhr","vo2","rec"].forEach(function(k){
         var ser = vitAll.filter(function(x){ return x.vitals[k]; });
-        if (ser.length >= 1){
-          var first = ser[ser.length - 1].vitals[k], last = ser[0].vitals[k];
+        var first = (TT.start && TT.start[k] != null) ? TT.start[k] : (ser.length ? ser[ser.length - 1].vitals[k] : null);
+        var last = (TT.end && TT.end[k] != null) ? TT.end[k] : (ser.length ? ser[0].vitals[k] : null);
+        if (first != null || last != null){
           html += row({ hrv: "HRV", rhr: "Resting HR", vo2: "VO₂ max", rec: "Recovery HR" }[k], first, last, { hrv: "ms", rhr: "bpm", vo2: "", rec: "bpm" }[k]);
         }
       });
@@ -4534,7 +4894,9 @@
       '<div class="srow"><span>Complaints reframed</span><span><b>' + answered + "</b> of " + reframes.length + "</span></div>" +
       '<div class="srow"><span>Mercy tokens used</span><span><b>' + mercyUsed + "</b></span></div>" +
       ((state.embers || []).length ? '<div class="srow"><span>The ember won</span><span><b>' + state.embers.length + "×</b> · −" +
-        state.embers.reduce(function(a2, x){ return a2 + x.xp; }, 0) + " XP · longest unlit <b>" + emberLongestClean() + " days</b></span></div>" : "") +
+        state.embers.reduce(function(a2, x){ return a2 + x.xp; }, 0) + " XP · longest unlit <b>" + habitLongestClean("ember") + " days</b></span></div>" : "") +
+      ((state.sirens || []).length ? '<div class="srow"><span>The siren won</span><span><b>' + state.sirens.length + "×</b> · −" +
+        state.sirens.reduce(function(a2, x){ return a2 + x.xp; }, 0) + " XP · longest unbroken <b>" + habitLongestClean("siren") + " days</b></span></div>" : "") +
       (spendTotal ? '<div class="srow"><span>Coin spent (logged)</span><span><b>₹' + spendTotal.toLocaleString() + "</b></span></div>" : "");
     html += "<h4>What It Means</h4>";
     var ins = [];
@@ -4663,7 +5025,7 @@
   }
   function buildSharingScroll(){
     var S = JSON.parse(JSON.stringify(state));
-    ["journal","chronicle","reframes","embers","spends"].forEach(function(k){ S[k] = []; });
+    ["journal","chronicle","reframes","embers","sirens","spends","portraits"].forEach(function(k){ S[k] = []; });
     (S.checkins || []).forEach(function(c){ delete c.photos; });
     if (S.transform){ ["start","end"].forEach(function(sd){ if (S.transform[sd]) delete S.transform[sd].photos; }); }
     S.sharedScroll = todayStr();
@@ -4769,7 +5131,7 @@
       if (!p || !Array.isArray(p.quests)) throw 0;
       Object.keys(state).forEach(function(k){ delete state[k]; });
       Object.assign(state, p);
-      ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers"].forEach(function(k){ state[k] = state[k] || []; });
+      ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers","sirens","portraits"].forEach(function(k){ state[k] = state[k] || []; });
       state.xpDaily = state.xpDaily || {}; state.tollLog = state.tollLog || {};
       state.trophies = state.trophies || {}; state.bosses = state.bosses || {};
       state.coins = state.coins || 0;
@@ -4796,7 +5158,7 @@
       mutate(function(){
         Object.keys(state).forEach(function(k){ delete state[k]; });
         Object.assign(state, parsed);
-        ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers"].forEach(function(k){ state[k] = state[k] || []; });
+        ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers","sirens","portraits"].forEach(function(k){ state[k] = state[k] || []; });
         state.xpDaily = state.xpDaily || {}; state.tollLog = state.tollLog || {};
         state.trophies = state.trophies || {}; state.bosses = state.bosses || {};
         state.coins = state.coins || 0;
@@ -4867,6 +5229,235 @@
         : "Protected storage not yet granted \u2014 install the app to your home screen to upgrade it. Your record is still kept in two stores; keep the weekly exports.";
     }).catch(function(){});
   }
+  // ---------- the quote wall: one per launch ----------
+  var QUOTES = [
+["You have the right to your labour, but not to its fruits.","Bhagavad Gita 2.47"],
+["Waste no more time arguing what a good man should be. Be one.","Marcus Aurelius"],
+["You have power over your mind — not outside events. Realize this, and you will find strength.","Marcus Aurelius"],
+["The impediment to action advances action. What stands in the way becomes the way.","Marcus Aurelius"],
+["It is not that we have a short time to live, but that we waste a lot of it.","Seneca"],
+["Every night before going to sleep, we must ask ourselves: what weakness did I overcome today?","Seneca"],
+["Difficulties strengthen the mind, as labour does the body.","Seneca"],
+["No man is free who is not master of himself.","Epictetus"],
+["First say to yourself what you would be; and then do what you have to do.","Epictetus"],
+["We are what we repeatedly do. Excellence, then, is not an act, but a habit.","Will Durant, on Aristotle"],
+["I fear not the man who has practiced 10,000 kicks once, but the man who has practiced one kick 10,000 times.","Bruce Lee"],
+["Do not pray for an easy life; pray for the strength to endure a difficult one.","Bruce Lee"],
+["I hated every minute of training, but I said: don't quit. Suffer now and live the rest of your life as a champion.","Muhammad Ali"],
+["It isn't the mountains ahead to climb that wear you out; it's the pebble in your shoe.","Muhammad Ali"],
+["It always seems impossible until it's done.","Nelson Mandela"],
+["The best time to plant a tree was twenty years ago. The second best time is now.","Proverb"],
+["Fall seven times, stand up eight.","Japanese proverb"],
+["A journey of a thousand miles begins with a single step.","Lao Tzu"],
+["When the roots are deep, there is no reason to fear the wind.","Proverb"],
+["Discipline is choosing between what you want now and what you want most.",""],
+["Motivation gets you started. Habit keeps you going.","Jim Ryun"],
+["You do not rise to the level of your goals. You fall to the level of your systems.","James Clear"],
+["Every action you take is a vote for the person you wish to become.","James Clear"],
+["Success is the product of daily habits, not once-in-a-lifetime transformations.","James Clear"],
+["The pain of discipline weighs ounces. The pain of regret weighs tonnes.",""],
+["Nobody is coming to save you. Get up.",""],
+["The gym does not care how you feel. Show up anyway.",""],
+["You don't have to be extreme. You have to be consistent.",""],
+["A year from now you will wish you had started today.",""],
+["The body achieves what the mind believes.",""],
+["Sweat is fat crying.",""],
+["The only bad workout is the one that didn't happen.",""],
+["Slow progress is still progress. Standing still is not.",""],
+["What you do every day matters more than what you do once in a while.","Gretchen Rubin"],
+["Hard choices, easy life. Easy choices, hard life.","Jerzy Gregorek"],
+["We suffer more in imagination than in reality.","Seneca"],
+["He who has a why to live can bear almost any how.","Friedrich Nietzsche"],
+["That which does not kill us makes us stronger.","Friedrich Nietzsche"],
+["Whether you think you can, or you think you can't — you're right.","Henry Ford"],
+["It's not whether you get knocked down, it's whether you get up.","Vince Lombardi"],
+["The harder the battle, the sweeter the victory.","Les Brown"],
+["Don't count the days. Make the days count.","Muhammad Ali"],
+["Champions keep playing until they get it right.","Billie Jean King"],
+["I've failed over and over and over again in my life. And that is why I succeed.","Michael Jordan"],
+["Someone busier than you is running right now.",""],
+["The scale is a liar some days. The tape and the mirror keep the truth.",""],
+["Your future self is watching you right now through your memories.",""],
+["The cigarette never once kept its promise.",""],
+["Cravings are waves. Every one of them breaks if you stand still.",""],
+["You've survived every urge you didn't obey. All of them.",""],
+["An urge lasts minutes. The pride of refusing it lasts all day.",""],
+["Comfort is a slow poison sold as a reward.",""],
+["The man on the other side of this arc does not negotiate with the old you.",""],
+["Weight is lost in the kitchen, earned in the gym, and kept in the mind.",""],
+["The barbell is honest. It moves or it doesn't.",""],
+["Strength does not come from winning. Your struggles develop your strengths.","Arnold Schwarzenegger"],
+["The last three or four reps is what makes the muscle grow.","Arnold Schwarzenegger"],
+["The resistance that you fight physically in the gym and in life builds a strong character.","Arnold Schwarzenegger"],
+["Run when you can, walk if you have to, crawl if you must; just never give up.","Dean Karnazes"],
+["The miracle isn't that I finished. The miracle is that I had the courage to start.","John Bingham"],
+["Pain is temporary. Quitting lasts forever.","Lance Armstrong"],
+["The race is won or lost long before the starting gun.",""],
+["Long runs build the body. Lonely runs build the mind.",""],
+["Every step you take today is one your race-day self will thank you for.",""],
+["A 5k begins the moment you stop wanting to run it.",""],
+["Kilometres in the bank never bounce.",""],
+["Trust the taper. Trust the training. Trust yourself.",""],
+["Your pace is your pace. Run your own race.",""],
+["The morning asks a question. Your shoes are the answer.",""],
+["Sleep is the greatest legal performance enhancer that exists.",""],
+["Discipline at 10 PM looks like a bedtime, not a battle.",""],
+["Rest is not the absence of training. It is half of it.",""],
+["What gets measured gets managed.","Peter Drucker"],
+["The tape doesn't flatter and doesn't insult. It reports.",""],
+["Small daily improvements are the key to staggering long-term results.",""],
+["One day or day one. You decide.",""],
+["Do something today that your future self will thank you for.",""],
+["Don't stop when you're tired. Stop when you're done.",""],
+["It never gets easier. You get stronger.",""],
+["The best project you'll ever work on is you.",""],
+["Excuses burn zero calories.",""],
+["Wake up with determination. Go to bed with satisfaction.",""],
+["If it doesn't challenge you, it doesn't change you.","Fred DeVito"],
+["Strive for progress, not perfection.",""],
+["Good things come to those who sweat.",""],
+["A little progress each day adds up to big results.",""],
+["The secret of getting ahead is getting started.",""],
+["Well begun is half done.","Aristotle"],
+["He who conquers himself is the mightiest warrior.","Confucius"],
+["It does not matter how slowly you go so long as you do not stop.","Confucius"],
+["When it is obvious that the goals cannot be reached, don't adjust the goals; adjust the action steps.","Confucius"],
+["Our greatest glory is not in never falling, but in rising every time we fall.","Confucius"],
+["The superior man is modest in his speech but exceeds in his actions.","Confucius"],
+["Perseverance is not a long race; it is many short races one after the other.","Walter Elliot"],
+["Courage doesn't always roar. Sometimes it is the quiet voice at the end of the day saying, I will try again tomorrow.","Mary Anne Radmacher"],
+["Start where you are. Use what you have. Do what you can.","Arthur Ashe"],
+["The man who moves a mountain begins by carrying away small stones.","Confucius"],
+["Rivers know this: there is no hurry. We shall get there some day.","A. A. Milne"],
+["However long the night, the dawn will break.","African proverb"],
+["Smooth seas do not make skillful sailors.","African proverb"],
+["When there is no enemy within, the enemies outside cannot hurt you.","African proverb"],
+["If you want to go fast, go alone. If you want to go far, go together.","Proverb"],
+["Little by little, a little becomes a lot.","Tanzanian proverb"],
+["Drop by drop is the water pot filled.","Buddhist saying"],
+["However many holy words you read, however many you speak, what good will they do you if you do not act on upon them?","Buddha (attributed)"],
+["Each morning we are born again. What we do today is what matters most.","Buddhist saying"],
+["You yourself must strive. The Buddhas only point the way.","Dhammapada"],
+["Better than a thousand hollow words is one word that brings peace.","Dhammapada"],
+["Man never made any material as resilient as the human spirit.","Bernard Williams"],
+["Energy and persistence conquer all things.","Benjamin Franklin"],
+["You may delay, but time will not.","Benjamin Franklin"],
+["Early to bed and early to rise makes a man healthy, wealthy, and wise.","Benjamin Franklin"],
+["Lost time is never found again.","Benjamin Franklin"],
+["Either write something worth reading or do something worth writing.","Benjamin Franklin"],
+["An investment in knowledge pays the best interest.","Benjamin Franklin"],
+["Ten pages a day is a library in a decade.",""],
+["A reader lives a thousand lives before he dies.","George R. R. Martin"],
+["The man who does not read has no advantage over the man who cannot read.",""],
+["Knowledge isn't power. Applied knowledge is power.",""],
+["Money grows on the tree of persistence.","Japanese proverb"],
+["A rupee logged is a rupee understood.",""],
+["Beware of little expenses; a small leak will sink a great ship.","Benjamin Franklin"],
+["Wealth is the ability to fully experience life.","Henry David Thoreau"],
+["The purse fills slowly and empties fast. Watch the mouth of it.",""],
+["Every craving conquered is a coin in a vault no one can rob.",""],
+["Anger is an acid that does more harm to the vessel in which it is stored.","Mark Twain (attributed)"],
+["Complaining is draining. Reframe and rise.",""],
+["Between stimulus and response there is a space. In that space is our power to choose.","Viktor Frankl (attributed)"],
+["When we are no longer able to change a situation, we are challenged to change ourselves.","Viktor Frankl"],
+["Those who have a why can bear with almost any how.","Viktor Frankl"],
+["He who angers you conquers you.","Elizabeth Kenny"],
+["Speak only if it improves upon the silence.","Mahatma Gandhi (attributed)"],
+["Strength does not come from physical capacity. It comes from an indomitable will.","Mahatma Gandhi"],
+["Live as if you were to die tomorrow. Learn as if you were to live forever.","Mahatma Gandhi (attributed)"],
+["The future depends on what you do today.","Mahatma Gandhi (attributed)"],
+["A man is but the product of his thoughts. What he thinks, he becomes.","Mahatma Gandhi"],
+["Arise, awake, and stop not till the goal is reached.","Swami Vivekananda"],
+["Take up one idea. Make that one idea your life. This is the way to success.","Swami Vivekananda"],
+["All power is within you; you can do anything and everything.","Swami Vivekananda"],
+["Talk to yourself once in a day, otherwise you may miss meeting an excellent person in this world.","Swami Vivekananda (attributed)"],
+["In a day, when you don't come across any problems, you can be sure that you are travelling on a wrong path.","Swami Vivekananda (attributed)"],
+["Dream is not that which you see while sleeping. It is something that does not let you sleep.","A. P. J. Abdul Kalam"],
+["If you want to shine like a sun, first burn like a sun.","A. P. J. Abdul Kalam (attributed)"],
+["Man needs his difficulties because they are necessary to enjoy success.","A. P. J. Abdul Kalam"],
+["Excellence is a continuous process and not an accident.","A. P. J. Abdul Kalam"],
+["You cannot change your future, but you can change your habits, and surely your habits will change your future.","A. P. J. Abdul Kalam (attributed)"],
+["Set thy heart upon thy work, but never on its reward.","Bhagavad Gita"],
+["A man is made by his belief. As he believes, so he is.","Bhagavad Gita"],
+["There is neither this world nor the world beyond nor happiness for the one who doubts.","Bhagavad Gita"],
+["Let a man lift himself by his own self alone; let him not lower himself.","Bhagavad Gita 6.5"],
+["For him who has conquered the mind, the mind is the best of friends.","Bhagavad Gita 6.6"],
+["Yoga is the journey of the self, through the self, to the self.","Bhagavad Gita (attributed)"],
+["Change is the law of the universe. You can be a millionaire or a pauper in an instant.","Bhagavad Gita (paraphrase)"],
+["The soul is neither born, and nor does it die.","Bhagavad Gita 2.20"],
+["Man is made by his belief. As he believes, so he becomes.","Bhagavad Gita (paraphrase)"],
+["Perform your duty and abandon all attachment to success or failure.","Bhagavad Gita 2.48"],
+["The mind is restless and difficult to restrain, but it is subdued by practice.","Bhagavad Gita 6.35"],
+["Hell has three gates: lust, anger, and greed.","Bhagavad Gita 16.21"],
+["Even a little practice of this discipline protects one from great fear.","Bhagavad Gita 2.40"],
+["Out of the night that covers me, black as the pit from pole to pole, I thank whatever gods may be for my unconquerable soul.","William Ernest Henley"],
+["I am the master of my fate, I am the captain of my soul.","William Ernest Henley"],
+["Do not go where the path may lead; go instead where there is no path and leave a trail.","Ralph Waldo Emerson (attributed)"],
+["What lies behind us and what lies before us are tiny matters compared to what lies within us.","Ralph Waldo Emerson (attributed)"],
+["The only person you are destined to become is the person you decide to be.","Ralph Waldo Emerson (attributed)"],
+["Adopt the pace of nature: her secret is patience.","Ralph Waldo Emerson"],
+["Nothing great was ever achieved without enthusiasm.","Ralph Waldo Emerson"],
+["What you are afraid to do is a clear indication of the next thing you need to do.",""],
+["Twenty years from now you will be more disappointed by the things you didn't do than by the ones you did.","H. Jackson Brown Jr."],
+["The best way out is always through.","Robert Frost"],
+["In three words I can sum up everything I've learned about life: it goes on.","Robert Frost"],
+["The woods are lovely, dark and deep, but I have promises to keep, and miles to go before I sleep.","Robert Frost"],
+["Success is not final, failure is not fatal: it is the courage to continue that counts.","(attributed to Churchill)"],
+["If you're going through hell, keep going.","(attributed to Churchill)"],
+["Continuous effort — not strength or intelligence — is the key to unlocking our potential.","(attributed to Churchill)"],
+["We make a living by what we get, but we make a life by what we give.","(attributed to Churchill)"],
+["Courage is what it takes to stand up and speak; courage is also what it takes to sit down and listen.","(attributed to Churchill)"],
+["The two most important days in your life are the day you are born and the day you find out why.","(attributed to Mark Twain)"],
+["The secret of getting ahead is getting started.","(attributed to Mark Twain)"],
+["Give me six hours to chop down a tree and I will spend the first four sharpening the axe.","(attributed to Lincoln)"],
+["I am a slow walker, but I never walk back.","(attributed to Lincoln)"],
+["Discipline equals freedom.","Jocko Willink"],
+["Don't expect to be motivated every day. Motivation comes and goes. Discipline stays.",""],
+["When you think you're done, you're only at 40% of your body's capability.","David Goggins"],
+["You are in danger of living a life so comfortable that you will die without ever realizing your true potential.","David Goggins"],
+["The most important conversation is the one you have with yourself.","David Goggins"],
+["Suffering is a test. That's all it is. Pass it.","David Goggins"],
+["Be more than motivated. Be more than driven. Become literally obsessed.","David Goggins"],
+["Mental toughness is a lifestyle.","David Goggins"],
+["Stay hard.","David Goggins"],
+["Everybody comes to a point in their life when they want to quit. But it's what you do at that moment that determines who you are.","David Goggins"],
+["A river cuts through rock not because of its power, but because of its persistence.","James N. Watkins"],
+["Great things are done by a series of small things brought together.","Vincent van Gogh"],
+["If you hear a voice within you say you cannot paint, then by all means paint, and that voice will be silenced.","Vincent van Gogh"],
+["Amateurs sit and wait for inspiration. The rest of us just get up and go to work.","Stephen King"],
+["The scariest moment is always just before you start.","Stephen King"],
+["You don't have to see the whole staircase, just take the first step.","Martin Luther King Jr."],
+["If you can't fly then run, if you can't run then walk, if you can't walk then crawl, but by all means keep moving.","Martin Luther King Jr."],
+["The ultimate measure of a man is not where he stands in moments of comfort, but where he stands at times of challenge.","Martin Luther King Jr."],
+["Believe you can and you're halfway there.","(attributed to T. Roosevelt)"],
+["Do what you can, with what you have, where you are.","Theodore Roosevelt"],
+["It is hard to fail, but it is worse never to have tried to succeed.","Theodore Roosevelt"],
+["Nothing in the world is worth having or worth doing unless it means effort, pain, difficulty.","Theodore Roosevelt"],
+["Comparison is the thief of joy.","(attributed to T. Roosevelt)"],
+["The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood.","Theodore Roosevelt"],
+["Tonight's journal is a letter to the man you're becoming.",""],
+["Gratitude turns what we have into enough.",""],
+["A father's discipline is a son's inheritance.",""],
+["Your son is watching how you treat hard things.",""],
+["The house is built brick by brick; the family, day by day.",""],
+["Strong father, strong roots. The tree grows as the roots allow.",""],
+["Provide with the work of your hands; protect with the strength of your body; lead with the calm of your mind.",""],
+["The best gift you can give your family is a healthy you.",""],
+["Legacy is not what you leave for people. It is what you leave in them.","Peter Strople"],
+["Winter is the season that asks; spring is the season that answers.",""],
+["December will interrogate what September promised.",""],
+["The arc does not care about your mood. It counts your days.",""],
+["One hundred and twenty-two days is enough to change everything, and short enough to waste.",""],
+["The reckoning comes every Sunday. Have an answer ready.",""],
+["Seal the day before the day seals you.",""]
+  ];
+  (function(){
+    var el = document.getElementById("daily-quote");
+    if (el && QUOTES.length){
+      var q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+      el.innerHTML = "\u201c" + q[0] + "\u201d" + (q[1] ? " <b>\u2014 " + q[1] + "</b>" : "");
+    }
+  })();
   arcSweep();
   checkTrophies();
   checkBoss();
