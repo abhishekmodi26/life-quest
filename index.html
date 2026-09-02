@@ -105,15 +105,16 @@
   @keyframes shimmer{from{background-position:0 0}to{background-position:200% 0}}
   .vscore{font-family:var(--disp);font-size:34px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
   .vgrade{font-family:var(--disp);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-top:3px}
-  .vparts{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
-  .vpart{
-    font-size:11px;border:1px solid var(--line);border-radius:14px;padding:3px 9px;
-    color:var(--ink-mut);font-variant-numeric:tabular-nums;
-  }
-  .vpart.v-full{border-color:rgba(201,164,69,.55);color:var(--gold-hi)}
-  .vpart.v-low{border-color:rgba(197,90,90,.55);color:#e0a1a1}
-  .vline{font-size:13px;line-height:1.55;margin-top:5px}
-  .vline b{font-family:var(--disp);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+  .vrow{display:flex;gap:9px;align-items:baseline;font-size:13.5px;line-height:1.5;padding:3.5px 0;border-bottom:1px dotted rgba(255,255,255,.05)}
+  .vrow .vico{flex:none;width:16px;text-align:center;font-size:12px}
+  .vrow .vk{flex:none;width:66px;font-family:var(--disp);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+  .vrow .vtx{flex:1;min-width:0;color:var(--ink-mut)}
+  .vmeta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;margin:2px 0 6px;flex-wrap:wrap}
+  .vspark{flex:none;opacity:.9}
+  .vrisk{margin-top:9px;font-size:13px;line-height:1.5;background:rgba(197,120,60,.1);border:1px solid rgba(197,120,60,.4);border-radius:8px;padding:8px 11px;color:#e8c4a1}
+  .vrisk b{font-family:var(--disp);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
+  .vfocus{margin-top:10px;font-size:13.5px;line-height:1.55;background:rgba(107,143,190,.1);border:1px solid rgba(107,143,190,.35);border-radius:8px;padding:8px 11px;color:#c4d7ee}
+  .vfocus b{font-family:var(--disp);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
   #quotebox{align-items:center;justify-content:center;padding:26px 18px}
   .quotepane{
     position:relative;background:linear-gradient(180deg,#241b40,var(--card));
@@ -601,7 +602,7 @@
 
 <canvas id="embers" aria-hidden="true"></canvas>
 <div class="wrap">
-  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 13</span></p>
+  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 15</span></p>
 
   <header class="charsheet">
     <div class="char-top">
@@ -3685,74 +3686,154 @@
     }
   });
   // ---------- the verdict: a system score for every day ----------
+  function trainingOn(d){
+    var r = null;
+    [["w-run", function(e){ return "Ran " + e.km + " km in " + e.min + " min" + (e.type ? " (" + e.type + ")" : ""); }],
+     ["w-gym", function(e){ return "Iron session — " + (e.vol ? e.vol.toLocaleString() + " kg moved" : e.min + " min"); }],
+     ["w-cycle", function(e){ return "Rode " + e.km + " km in " + e.min + " min"; }]].forEach(function(p){
+      if (r) return;
+      var q = state.quests.find(function(x){ return x.id === p[0]; });
+      var e = q && (q.slog || []).find(function(x){ return x.t === d; });
+      if (e) r = p[1](e);
+    });
+    return r;
+  }
   function dayScore(d){
     var L = calDueList(d);
     var due = L.length, done = L.filter(function(x){ return x.done; }).length;
+    var missed = L.filter(function(x){ return !x.done; }).map(function(x){ return shortName(x.q.title); });
     var parts = [];
     var qpct = due ? done / due : 1;
-    parts.push({ k: "Quests", got: Math.round(qpct * 50), max: 50, note: done + "/" + due + " done" });
+    parts.push({ k: "Quests", got: Math.round(qpct * 50), max: 50,
+      state: qpct >= 0.85 ? 2 : qpct >= 0.5 ? 1 : 0,
+      text: done + " of " + due + " done" +
+        (missed.length === 0 ? " — a clean sweep" : missed.length <= 3 ? " — missed " + missed.join(", ") : " — " + missed.length + " left unticked") });
     var dow = new Date(d + "T12:00:00").getDay();
-    var needId = dow === 1 ? "w-cycle" : (dow === 2 || dow === 4 || dow === 6) ? "w-gym" : "w-run";
-    var tq = state.quests.find(function(x){ return x.id === needId; });
-    var trained = !!(tq && (tq.slog || []).some(function(e){ return e.t === d; }));
     var sheltered = state.arc && ((state.arc.shelterDays && state.arc.shelterDays[d]) || (state.arc.shelterFrom && d >= state.arc.shelterFrom));
-    parts.push({ k: "Training", got: trained || sheltered ? 15 : 0, max: 15,
-      note: trained ? shortName(tq.title) + " done" : sheltered ? "sheltered" : shortName(tq ? tq.title : "session") + " missed" });
+    var isRest = state.arc && dow === state.arc.restDay;
+    var tr = trainingOn(d);
+    parts.push({ k: "Training", got: (tr || sheltered || isRest) ? 15 : 0, max: 15,
+      state: tr ? 2 : (sheltered || isRest) ? 2 : 0,
+      text: tr ? tr : sheltered ? "sheltered — no session owed" : isRest ? "rest day — recovery is training too" : "no session logged" });
     var sq = state.quests.find(function(x){ return x.kind === "counter"; });
     var stp = (sq && sq.log && sq.log[d]) || 0;
-    var spct = sq ? Math.min(1, stp / (sq.target || 15000)) : 0;
-    parts.push({ k: "March", got: Math.round(spct * 10), max: 10, note: stp ? stp.toLocaleString() + " steps" : "no steps logged" });
+    var tgt = (sq && sq.target) || 15000;
+    var spct = Math.min(1, stp / tgt);
+    parts.push({ k: "Steps", got: Math.round(spct * 10), max: 10,
+      state: spct >= 1 ? 2 : spct >= 0.6 ? 1 : 0,
+      text: stp ? stp.toLocaleString() + " of " + tgt.toLocaleString() : "no steps logged" });
     var sl = state.sleep.find(function(e){ return e.t === d; });
-    parts.push({ k: "Rest", got: sl ? (sl.hours >= 7 ? 10 : sl.hours >= 6 ? 6 : 3) : 0, max: 10, note: sl ? sl.hours + "h slept" : "sleep not logged" });
+    parts.push({ k: "Sleep", got: sl ? (sl.hours >= 7 ? 10 : sl.hours >= 6 ? 6 : 3) : 0, max: 10,
+      state: sl ? (sl.hours >= 7 ? 2 : sl.hours >= 6 ? 1 : 0) : 0,
+      text: sl ? sl.hours + "h" + (sl.hours >= 7 ? " — the engine got its due" : " — under the 7h line") : "not logged" });
     var fl = habitsOn("ember", d).length + habitsOn("siren", d).length;
-    parts.push({ k: "Flames", got: fl === 0 ? 10 : Math.max(0, 10 - fl * 3), max: 10, note: fl ? "gave in " + fl + "\u00d7" : "both flames cold" });
+    parts.push({ k: "Flames", got: fl === 0 ? 10 : Math.max(0, 10 - fl * 3), max: 10,
+      state: fl === 0 ? 2 : fl <= 2 ? 1 : 0,
+      text: fl === 0 ? "both flames stayed cold" : "gave in " + fl + "\u00d7 — the toll was paid" });
     var open = state.reframes.filter(function(r){ return r.t === d && !r.good; }).length;
-    parts.push({ k: "Tongue", got: open ? 0 : 5, max: 5, note: open ? open + " complaint unanswered" : "all reframed" });
+    var anyRf = state.reframes.filter(function(r){ return r.t === d; }).length;
+    parts.push({ k: "Tongue", got: open ? 0 : 5, max: 5,
+      state: open ? 0 : 2,
+      text: open ? open + " complaint" + (open > 1 ? "s" : "") + " still awaiting its answer" : anyRf ? "every complaint reframed" : "no complaints — silver held" });
     var score = parts.reduce(function(a, p){ return a + p.got; }, 0);
-    return { score: score, parts: parts };
+    return { score: score, parts: parts, due: due, done: done };
   }
   var FOCUS_MSG = {
-    Quests: "the unticked dailies \u2014 tick as you go, not at midnight",
-    Training: "the scheduled session \u2014 it anchors the whole day",
-    March: "steps \u2014 bank them before evening swallows the count",
-    Rest: "sleep \u2014 the bedtime is a quest too",
-    Flames: "the old flames \u2014 log the urge, then outlast it",
-    Tongue: "the open complaint \u2014 answer it before the day ends"
+    Quests: "the unticked dailies — tick as you go, not at midnight",
+    Training: "today\u2019s session — it anchors everything else",
+    Steps: "steps — bank them before evening swallows the count",
+    Sleep: "sleep — the bedtime is a quest too",
+    Flames: "the old flames — log the urge, then outlast it",
+    Tongue: "the open complaint — answer it before the day ends"
   };
   function gradeWord(s){
-    return s >= 90 ? "A DAY FOR THE SCROLL" : s >= 75 ? "A SOLID DAY\u2019S WORK" : s >= 60 ? "UNEVEN \u2014 BUT COUNTED" : s >= 40 ? "A ROUGH PAGE" : "THE ARC NOTICED";
+    return s >= 90 ? "A DAY FOR THE SCROLL" : s >= 75 ? "A SOLID DAY\u2019S WORK" : s >= 60 ? "UNEVEN — BUT COUNTED" : s >= 40 ? "A ROUGH PAGE" : "THE ARC NOTICED";
   }
   function gradeColor(s){ return s >= 90 ? "var(--gold-hi)" : s >= 75 ? "#8fbe8f" : s >= 60 ? "#d9b96a" : "#e0a1a1"; }
+  var VICO = ["\u2717", "\u25b3", "\u2714"];
+  var VCOL = ["#e0a1a1", "#d9b96a", "#8fbe8f"];
+  function scoreSpark(days){
+    if (days.length < 2) return "";
+    var W = 128, H = 30, P = 3;
+    var xs = days.map(function(x, i){ return P + i * ((W - 2 * P) / (days.length - 1)); });
+    var pts = days.map(function(x, i){ return xs[i].toFixed(1) + "," + (H - P - (x.s / 100) * (H - 2 * P)).toFixed(1); });
+    var last = pts[pts.length - 1].split(",");
+    return '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '" aria-label="Recent day scores" style="overflow:visible">' +
+      '<polyline points="' + pts.join(" ") + '" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>' +
+      '<circle cx="' + last[0] + '" cy="' + last[1] + '" r="2.6" fill="var(--gold-hi)"/></svg>';
+  }
+  function weekTally(){
+    var today = todayStr();
+    var dow = new Date(today + "T12:00:00").getDay();
+    var mon = addDays(today, -((dow + 6) % 7));
+    var out = [];
+    [["w-run", "runs"], ["w-gym", "iron"], ["w-cycle", "rides"]].forEach(function(p){
+      var q = state.quests.find(function(x){ return x.id === p[0]; });
+      if (!q) return;
+      var n = (q.slog || []).filter(function(e){ return e.t >= mon && e.t <= today; }).length;
+      out.push(n + " of " + q.target + " " + p[1]);
+    });
+    return out.join(" \u00b7 ");
+  }
+  function streaksOnLine(){
+    var today = todayStr(), y2 = yesterdayStr();
+    var dueIds = {};
+    calDueList(today).forEach(function(x){ dueIds[x.q.id] = 1; });
+    return state.quests.filter(function(q){
+      return q.type === "daily" && (q.streak || 0) >= 3 && q.lastDone === y2 && !isDoneOn(q, today) && dueIds[q.id];
+    }).map(function(q){ return shortName(q.title) + " (" + q.streak + "d)"; });
+  }
   function renderVerdict(){
     var el = document.getElementById("vd-body");
     if (!el) return;
     var live = document.getElementById("vd-live");
     var today = todayStr();
     if (state.arc && today >= state.arc.start){
-      live.textContent = "today so far: " + dayScore(today).score + "/100";
+      var T = dayScore(today);
+      live.textContent = "today: " + T.done + " of " + T.due + " quests \u00b7 " + T.score + " pts and counting";
     } else { live.textContent = ""; }
     var y = addDays(today, -1);
     if (!state.arc || y < state.arc.start){
-      el.innerHTML = '<div class="empty">The first verdict is written after your first full day \u2014 tomorrow at dawn.</div>';
+      el.innerHTML = '<div class="empty">The first verdict is written after your first full day — tomorrow at dawn.</div>';
       return;
     }
     var V = dayScore(y);
-    var right = V.parts.filter(function(p){ return p.got >= p.max * 0.8; });
-    var wrong = V.parts.filter(function(p){ return p.got < p.max * 0.5; });
-    var focus = V.parts.slice().sort(function(a, b){ return (a.got / a.max) - (b.got / b.max); })[0];
+    var focus = V.parts.filter(function(p){ return p.state < 2; })
+      .sort(function(a, b){ return (a.got / a.max) - (b.got / b.max); })[0];
     el.innerHTML =
-      '<div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">' +
-      '<div><span class="vscore" style="color:' + gradeColor(V.score) + '">' + V.score + '</span><span style="color:var(--ink-faint);font-size:13px">/100</span>' +
-      '<div class="vgrade" style="color:' + gradeColor(V.score) + '">' + gradeWord(V.score) + "</div></div>" +
-      '<span class="hintlbl">yesterday \u00b7 ' + esc(y) + "</span></div>" +
-      '<div class="vparts">' + V.parts.map(function(p){
-        var cls = p.got >= p.max * 0.8 ? " v-full" : p.got < p.max * 0.5 ? " v-low" : "";
-        return '<span class="vpart' + cls + '">' + p.k + " " + p.got + "/" + p.max + "</span>";
-      }).join("") + "</div>" +
-      (right.length ? '<div class="vline"><b style="color:var(--gold-hi)">What held</b> \u2014 ' + right.map(function(p){ return p.note; }).join(" \u00b7 ") + "</div>" : "") +
-      (wrong.length ? '<div class="vline"><b style="color:#e0a1a1">What slipped</b> \u2014 ' + wrong.map(function(p){ return p.note; }).join(" \u00b7 ") + "</div>" : "") +
-      '<div class="vline"><b style="color:#a8cbec">Focus today</b> \u2014 ' + (FOCUS_MSG[focus.k] || focus.k) + "</div>" +
-      (wrong.some(function(p){ return p.k === "Quests"; }) ? '<div class="vline"><button class="btn-ghost" data-calbf="' + y + '" type="button" style="padding:5px 12px;font-size:12.5px">\u23ea Did some of it but forgot to log? Backfill ' + y.slice(5) + "</button></div>" : "");
+      '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px">' +
+      '<span class="vscore" style="color:' + gradeColor(V.score) + '">' + V.score + '<span style="color:var(--ink-faint);font-size:14px;font-weight:400">/100</span></span>' +
+      '<span><span class="vgrade" style="color:' + gradeColor(V.score) + '">' + gradeWord(V.score) + '</span>' +
+      '<div class="hintlbl">yesterday \u00b7 ' + esc(y) + "</div></span></div>" +
+      (function(){
+        var db = addDays(y, -1);
+        var delta = (state.arc && db >= state.arc.start) ? V.score - dayScore(db).score : null;
+        var days = [];
+        for (var i = 6; i >= 0; i--){
+          var dd = addDays(y, -i);
+          if (state.arc && dd >= state.arc.start && dd <= y) days.push({ t: dd, s: dayScore(dd).score });
+        }
+        return '<div class="vmeta">' +
+          (delta != null ? '<span style="color:' + (delta >= 0 ? "#8fbe8f" : "#e0a1a1") + '">' + (delta >= 0 ? "\u25b2 +" + delta : "\u25bc " + delta) + ' vs the day before</span>' : "") +
+          (days.length >= 2 ? '<span class="vspark">' + scoreSpark(days) + "</span>" : "") + "</div>";
+      })() +
+      V.parts.map(function(p){
+        return '<div class="vrow"><span class="vico" style="color:' + VCOL[p.state] + '">' + VICO[p.state] + "</span>" +
+          '<span class="vk">' + p.k + "</span><span class=\"vtx\">" + p.text + "</span></div>";
+      }).join("") +
+      (function(){
+        var xp = state.xpDaily[y];
+        var toll = (state.tollLog || {})[y];
+        var wk = weekTally();
+        var risk = streaksOnLine();
+        return '<div class="vrow"><span class="vico" style="color:var(--gold)">\u2726</span><span class="vk">XP</span><span class="vtx">' +
+            (xp != null ? (xp > 0 ? "+" : "") + xp + " earned" : "none logged") + (toll ? ' \u00b7 <span style="color:#e0a1a1">\u2212' + toll + " toll paid</span>" : "") + "</span></div>" +
+          (wk ? '<div class="vrow"><span class="vico" style="color:#a8cbec">\u00bb</span><span class="vk">Week</span><span class="vtx">' + wk + "</span></div>" : "") +
+          (risk.length ? '<div class="vrisk">\ud83d\udd25 <b>On the line today:</b> ' + risk.slice(0, 3).join(" \u00b7 ") + (risk.length > 3 ? " +" + (risk.length - 3) + " more" : "") + " \u2014 streaks die at midnight.</div>" : "");
+      })() +
+      (focus ? '<div class="vfocus">\u27a4 <b>Today, win back:</b> ' + (FOCUS_MSG[focus.k] || focus.k) + "</div>"
+             : '<div class="vfocus" style="color:var(--gold-hi)">\u27a4 Nothing slipped. Do it again — that\u2019s the whole secret.</div>') +
+      (V.parts[0].state < 2 ? '<div style="margin-top:8px"><button class="btn-ghost" data-calbf="' + y + '" type="button" style="padding:5px 12px;font-size:12.5px">\u23ea Did some of it but forgot to log? Backfill ' + y.slice(5) + "</button></div>" : "");
   }
 
   function renderDaySheet(){
