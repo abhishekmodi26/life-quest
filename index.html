@@ -103,6 +103,17 @@
     transition:width .5s ease;
   }
   @keyframes shimmer{from{background-position:0 0}to{background-position:200% 0}}
+  .vscore{font-family:var(--disp);font-size:34px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+  .vgrade{font-family:var(--disp);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-top:3px}
+  .vparts{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+  .vpart{
+    font-size:11px;border:1px solid var(--line);border-radius:14px;padding:3px 9px;
+    color:var(--ink-mut);font-variant-numeric:tabular-nums;
+  }
+  .vpart.v-full{border-color:rgba(201,164,69,.55);color:var(--gold-hi)}
+  .vpart.v-low{border-color:rgba(197,90,90,.55);color:#e0a1a1}
+  .vline{font-size:13px;line-height:1.55;margin-top:5px}
+  .vline b{font-family:var(--disp);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
   #quotebox{align-items:center;justify-content:center;padding:26px 18px}
   .quotepane{
     position:relative;background:linear-gradient(180deg,#241b40,var(--card));
@@ -184,6 +195,7 @@
   /* ================= panels ================= */
   .cols{display:grid;grid-template-columns:1fr 330px;gap:18px;align-items:start}
   .cols2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .cols > *, .cols2 > *{min-width:0}
   @media (max-width:900px){.cols,.cols2{grid-template-columns:1fr}}
   .panel{
     background:var(--card);border:1px solid var(--line);border-radius:12px;
@@ -439,6 +451,11 @@
   @media (max-width:600px){.cigallery{grid-template-columns:repeat(2,1fr)}}
   .cigallery img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer}
   #photobox img{max-width:min(92vw,560px);max-height:84vh;border-radius:10px;border:1px solid var(--gold)}
+  .exlib-item{
+    text-align:left;background:var(--card-2);border:1px solid var(--line);border-radius:8px;
+    color:var(--ink);padding:9px 12px;font-size:13.5px;
+  }
+  .exlib-item:hover{border-color:var(--gold)}
   .exblock{border:1px solid var(--line);border-radius:9px;padding:9px;margin-bottom:8px;background:rgba(0,0,0,.12)}
   .exblock input{background:#0d0918;border:1px solid var(--line);border-radius:7px;color:var(--ink);padding:8px 9px;font-size:13.5px;min-width:0}
   .exhint{font-size:11.5px;color:var(--gold);margin-top:5px;min-height:14px}
@@ -504,7 +521,7 @@
   .tl-s{display:none}
   /* ================= mobile ================= */
   @media (max-width:768px){
-    body{font-size:14px}
+    body{font-size:15px}
     .wrap{padding:16px 12px 46px}
     .tl-l{display:none}
     .tl-s{display:inline}
@@ -569,7 +586,12 @@
     .addform input[type=text]{font-size:14.5px !important;padding:10px 10px !important}
     .frow select{min-width:86px;font-size:13px}
     .btn{padding:8px 12px;font-size:13.5px}
-    .rectable{font-size:12px}
+    .rectable{font-size:12.5px}
+    .frow{flex-wrap:wrap}
+    .frow select{flex:1 1 40%;min-width:0}
+    .addform input[type=number]{min-width:0}
+    .psub{font-size:13.5px}
+    .hintlbl{font-size:12.5px}
     #toasts{bottom:56px}
     .transgrid{grid-template-columns:1fr}
     .tdelta{font-size:12.5px;letter-spacing:.05em}
@@ -579,7 +601,7 @@
 
 <canvas id="embers" aria-hidden="true"></canvas>
 <div class="wrap">
-  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 9</span></p>
+  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 13</span></p>
 
   <header class="charsheet">
     <div class="char-top">
@@ -747,6 +769,7 @@
   <!-- ============ TAB: QUESTS ============ -->
   <div class="tab active" id="tab-quests">
     <nav class="jumprow" aria-label="Jump to section">
+      <a href="#sec-verdict">Verdict</a>
       <a href="#sec-daily">Daily</a>
       <a href="#sec-weekly">Training</a>
       <a href="#sec-reframe">Reframe</a>
@@ -760,6 +783,15 @@
       <a href="#sec-bell">Bell</a>
       <a href="#newquest">＋ New</a>
     </nav>
+
+    <section class="panel" id="sec-verdict">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+        <h2 class="ptitle">The Verdict</h2>
+        <span class="hintlbl" id="vd-live" style="font-variant-numeric:tabular-nums"></span>
+      </div>
+      <div id="vd-body"></div>
+    </section>
+
     <div class="cols">
       <div>
         <section class="panel" style="padding-bottom:14px">
@@ -1183,6 +1215,19 @@
 <div class="overlay" id="photobox" hidden><img alt="Progress photo"></div>
 <div class="overlay" id="scrollbox" hidden><div class="scrollpane" id="scrollpane"></div></div>
 <div class="overlay" id="editbox" hidden><div class="modal" id="editpane" style="max-width:480px"></div></div>
+<div class="overlay" id="exlibbox" hidden><div class="modal" style="max-width:460px">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <h3 style="margin:0;font-family:var(--disp);font-size:13px;letter-spacing:.14em;color:var(--gold-hi)">THE ARMOURY</h3>
+    <button class="qclose" id="exlib-close" type="button" aria-label="Close" style="position:static">✕</button>
+  </div>
+  <input type="text" id="exlib-q" placeholder="Search every rack…" maxlength="40" style="background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:9px 11px;font-size:14px">
+  <div id="exlib-cats" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  <div id="exlib-list" style="max-height:44vh;overflow-y:auto;display:flex;flex-direction:column;gap:5px"></div>
+  <div class="addreward" style="margin-top:4px">
+    <input type="text" id="exlib-new" placeholder="Add your own — e.g. Landmine Press" maxlength="40" style="flex:1">
+    <button class="btn btn-sm" id="exlib-save" type="button">Keep it</button>
+  </div>
+</div></div>
 <div class="overlay" id="quotebox" hidden><div class="quotepane">
   <button class="qclose" id="quote-close" type="button" aria-label="Close">✕</button>
   <div class="qmark" aria-hidden="true">❝</div>
@@ -1193,7 +1238,7 @@
 <div id="toasts" aria-live="polite"></div>
 <div id="savebadge">…</div>
 
-<script type="application/json" id="save">{"v":3,"name":"Abhishek","xp":0,"stats":{"fit":0,"lrn":0,"gld":0,"hab":0},"quests":[{"id":"d-sleep","title":"Rest Well — log last night's sleep","area":"fit","diff":"easy","type":"daily","form":"sleep","streak":0,"best":0,"lastDone":""},{"id":"d-water","title":"Drink the Waters — a gallon a day","area":"fit","diff":"easy","type":"daily","kind":"water","target":15,"log":{},"streak":0,"best":0,"lastDone":""},{"id":"d-steps","title":"March of 15,000 Steps","area":"fit","diff":"hard","type":"daily","kind":"counter","target":15000,"unit":"steps","log":{},"streak":0,"best":0,"lastDone":""},{"id":"d-med","title":"Still the Mind — meditation","area":"hab","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-read","title":"Read the Tomes — 10 pages of nonfiction","area":"lrn","diff":"med","type":"daily","form":"reading","streak":0,"best":0,"lastDone":""},{"id":"d-sub","title":"Read the Broadsheets — 1 Substack article","area":"lrn","diff":"easy","type":"daily","form":"article","streak":0,"best":0,"lastDone":""},{"id":"d-chron","title":"Chronicle the Day","area":"hab","diff":"med","type":"daily","form":"chronicle","streak":0,"best":0,"lastDone":""},{"id":"d-gold","title":"Tend the Treasury — log today's spending","area":"gld","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-morn","title":"Morning Ritual — up early, 30 min before the phone","area":"hab","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-out","title":"Open-Air Training — 45 min outdoors","area":"fit","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-diet","title":"Keep the Feast Clean — whole foods only, no junk, no sugar, no alcohol","area":"fit","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-photo","title":"Progress Portrait — today's photo","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-dopa","title":"Guard the Mind — social media under 30 min","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-deep","title":"The Craft — 1 hour of deep work on a skill","area":"lrn","diff":"hard","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-cold","title":"Ice Rite — end the shower cold","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-nocomp","title":"Tongue of Silver — no complaint left unreframed","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-clean","title":"Clean Speech — no foul language with anyone","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-vow","title":"The Monk's Vow — self-command held all day","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"w-run","title":"The Runner's Path — go for a run","area":"fit","diff":"med","type":"weekly","target":3,"week":{"key":"","count":0},"lastDone":""},{"id":"w-gym","title":"Forge of Iron — intense gym session","area":"fit","diff":"hard","type":"weekly","target":3,"week":{"key":"","count":0},"lastDone":""},{"id":"w-cycle","title":"Ride the Wind — cycling","area":"fit","diff":"med","type":"weekly","target":2,"week":{"key":"","count":0},"lastDone":""},{"id":"q5","title":"Slay a Lingering Task — finish something you've been avoiding","area":"hab","diff":"hard","type":"side","done":false}],"rewards":[{"name":"One hour of guilt-free gaming","cost":250},{"name":"Order your favourite snack","cost":400},{"name":"A small treat under ₹500","cost":600},{"name":"Movie night","cost":800},{"name":"Weekend trip — the long-haul prize","cost":6000}],"lootV2":1,"coins":0,"arc":{"start":"2026-09-01","end":"2026-12-31","swept":""},"goals":{"weightStart":101.2,"weightTarget":89,"run5k":30,"deadlift":120,"books":7},"body":[],"log":[],"books":[],"journal":[],"articles":[],"chronicle":[],"sleep":[],"gaps":[],"reframes":[]}</script>
+<script type="application/json" id="save">{"v":3,"name":"Abhishek","xp":0,"stats":{"fit":0,"lrn":0,"gld":0,"hab":0},"quests":[{"id":"d-sleep","title":"Rest Well — log last night's sleep","area":"fit","diff":"easy","type":"daily","form":"sleep","streak":0,"best":0,"lastDone":""},{"id":"d-water","title":"Drink the Waters — a gallon a day","area":"fit","diff":"easy","type":"daily","kind":"water","target":15,"log":{},"streak":0,"best":0,"lastDone":""},{"id":"d-steps","title":"March of 15,000 Steps","area":"fit","diff":"hard","type":"daily","kind":"counter","target":15000,"unit":"steps","log":{},"streak":0,"best":0,"lastDone":""},{"id":"d-med","title":"Still the Mind — meditation","area":"hab","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-read","title":"Read the Tomes — 10 pages of nonfiction","area":"lrn","diff":"med","type":"daily","form":"reading","streak":0,"best":0,"lastDone":""},{"id":"d-sub","title":"Read the Broadsheets — 1 Substack article","area":"lrn","diff":"easy","type":"daily","form":"article","streak":0,"best":0,"lastDone":""},{"id":"d-chron","title":"Chronicle the Day","area":"hab","diff":"med","type":"daily","form":"chronicle","streak":0,"best":0,"lastDone":""},{"id":"d-gold","title":"Tend the Treasury — log today's spending","area":"gld","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-morn","title":"Morning Ritual — up early, 30 min before the phone","area":"hab","diff":"easy","type":"daily","streak":0,"best":0,"lastDone":""},{"id":"d-out","title":"Open-Air Training — 45 min outdoors","area":"fit","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-diet","title":"Keep the Feast Clean — whole foods only, no junk, no sugar, no alcohol","area":"fit","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-photo","title":"Progress Portrait — today's photo","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-dopa","title":"Guard the Mind — social media under 30 min","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-deep","title":"The Craft — 1 hour of deep work on a skill","area":"lrn","diff":"hard","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-cold","title":"Ice Rite — end the shower cold","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-nocomp","title":"Tongue of Silver — no complaint left unreframed","area":"hab","diff":"med","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"d-clean","title":"Clean Speech — no foul language with anyone","area":"hab","diff":"easy","type":"daily","created":"2026-09-01","streak":0,"best":0,"lastDone":""},{"id":"w-run","title":"The Runner's Path — go for a run","area":"fit","diff":"med","type":"weekly","target":3,"week":{"key":"","count":0},"lastDone":""},{"id":"w-gym","title":"Forge of Iron — intense gym session","area":"fit","diff":"hard","type":"weekly","target":3,"week":{"key":"","count":0},"lastDone":""},{"id":"w-cycle","title":"Ride the Wind — cycling","area":"fit","diff":"med","type":"weekly","target":2,"week":{"key":"","count":0},"lastDone":""},{"id":"q5","title":"Slay a Lingering Task — finish something you've been avoiding","area":"hab","diff":"hard","type":"side","done":false}],"rewards":[{"name":"One hour of guilt-free gaming","cost":250},{"name":"Order your favourite snack","cost":400},{"name":"A small treat under ₹500","cost":600},{"name":"Movie night","cost":800},{"name":"Weekend trip — the long-haul prize","cost":6000}],"lootV2":1,"coins":0,"arc":{"start":"2026-09-01","end":"2026-12-31","swept":""},"goals":{"weightStart":101.2,"weightTarget":89,"run5k":30,"deadlift":120,"books":7},"body":[],"log":[],"books":[],"journal":[],"articles":[],"chronicle":[],"sleep":[],"gaps":[],"reframes":[]}</script>
 
 <script>
 (function(){
@@ -1228,7 +1273,7 @@
       }
     }
   } catch (e){}
-  ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","moods","reframes","spends"].forEach(function(k){ state[k] = state[k] || []; });
+  ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","moods","reframes","spends","embers","sirens","portraits","exlib"].forEach(function(k){ state[k] = state[k] || []; });
   state.xpDaily = state.xpDaily || {};
   state.tollLog = state.tollLog || {};
   state.body = state.body || [];
@@ -1246,8 +1291,9 @@
     state.ws1012 = 1;
     if (state.goals.weightStart === 104) state.goals.weightStart = 101.2;
   }
-  if (!state.quests.some(function(q){ return q.id === "d-vow"; })){
-    state.quests.push({ id: "d-vow", title: "The Monk's Vow — self-command held all day", area: "hab", diff: "med", type: "daily", created: todayStr(), streak: 0, best: 0, lastDone: "" });
+  if (!state.vowGone){
+    state.vowGone = 1;
+    state.quests = state.quests.filter(function(q){ return q.id !== "d-vow"; });
   }
   if (!state.lootV2){
     state.lootV2 = 1;
@@ -1546,7 +1592,7 @@
     { id:"hoard",   n:"Dragon's Hoard",     d:"Hold 5,000 gold at once", xp:50, c:function(){ return state.coins >= 5000; } },
     { id:"unlit7",  n:"Seven Unlit",        d:"7 days without the ember", xp:50, c:function(){ return habitLongestClean("ember") >= 7; } },
     { id:"coldmoon",n:"The Cold Moon",      d:"30 days without the ember", xp:150, c:function(){ return habitLongestClean("ember") >= 30; } },
-    { id:"deafsong",n:"Deaf to the Siren",  d:"21 days with the vow unbroken", xp:100, c:function(){ return habitLongestClean("siren") >= 21; } },
+    { id:"deafsong",n:"Deaf to the Siren",  d:"21 days without the siren", xp:100, c:function(){ return habitLongestClean("siren") >= 21; } },
     { id:"iron50k", n:"Fifty Tonnes",       d:"50,000 kg of iron moved", xp:100, c:function(){
         return gymSlog().reduce(function(a, e){ return a + (e.vol != null ? e.vol : (e.lifts || []).reduce(function(b, l){ return b + liftVol(l); }, 0)); }, 0) >= 50000; } },
     { id:"iron100k",n:"The Mountain Moved", d:"100,000 kg of iron moved", xp:200, c:function(){
@@ -1851,6 +1897,8 @@
   function exNames(){
     var seen = {};
     gymSlog().forEach(function(e){ (e.lifts || []).forEach(function(l){ if (l.name) seen[l.name.trim()] = 1; }); });
+    (state.exlib || []).forEach(function(n){ seen[n] = 1; });
+    if (typeof EXLIB !== "undefined") Object.keys(EXLIB).forEach(function(c){ EXLIB[c].forEach(function(n){ seen[n] = 1; }); });
     return Object.keys(seen).sort();
   }
   function exBest(name){
@@ -1933,6 +1981,64 @@
   function exListHtml(){
     return '<datalist id="exlist">' + exNames().map(function(n){ return '<option value="' + esc(n) + '">'; }).join("") + "</datalist>";
   }
+  // ---------- the exercise library ----------
+  var EXLIB = {
+    "Barbell": ["Deadlift","Romanian Deadlift","Sumo Deadlift","Stiff-Leg Deadlift","Deficit Deadlift","Rack Pull","Back Squat","Front Squat","Box Squat","Pause Squat","Overhead Squat","Zercher Squat","Bench Press","Incline Bench Press","Decline Bench Press","Close-Grip Bench Press","Paused Bench Press","Floor Press","Overhead Press","Push Press","Behind-the-Neck Press","Barbell Row","Pendlay Row","Yates Row","Seal Row","Barbell Shrug","Barbell Curl","EZ-Bar Curl","Reverse Curl","Drag Curl","Skullcrusher","JM Press","Barbell Hip Thrust","Glute Bridge (Barbell)","Good Morning","Barbell Lunge","Barbell Split Squat","Barbell Calf Raise","Landmine Press","Landmine Row","Landmine Squat","Landmine Rotation","Power Clean","Hang Clean","Clean and Press","Snatch-Grip Deadlift"],
+    "Dumbbell": ["Dumbbell Bench Press","Incline Dumbbell Press","Decline Dumbbell Press","Dumbbell Fly","Incline Dumbbell Fly","Dumbbell Pullover","Dumbbell Shoulder Press","Arnold Press","Seated Dumbbell Press","Lateral Raise","Leaning Lateral Raise","Front Raise","Rear Delt Fly","Dumbbell Upright Row","Dumbbell Shrug","Dumbbell Row","Chest-Supported Row","Kroc Row","Renegade Row","Dumbbell Deadlift","Dumbbell Romanian Deadlift","Dumbbell Curl","Alternating Curl","Hammer Curl","Incline Curl","Concentration Curl","Zottman Curl","Cross-Body Hammer Curl","Preacher Curl (Dumbbell)","Overhead Triceps Extension","Lying Triceps Extension","Triceps Kickback","Tate Press","Goblet Squat","Dumbbell Squat","Dumbbell Lunge","Walking Lunge","Reverse Lunge","Bulgarian Split Squat","Step-Up","Dumbbell Calf Raise","Single-Leg RDL","Dumbbell Hip Thrust","Dumbbell Side Bend","Suitcase Carry","Dumbbell Thruster","Devil Press","Man Maker"],
+    "Machines & Cables": ["Smith Machine Squat","Smith Machine Bench Press","Smith Machine Incline Press","Smith Machine Shoulder Press","Smith Machine Row","Smith Machine Calf Raise","Smith Machine Lunge","Leg Press","Narrow-Stance Leg Press","Single-Leg Press","Hack Squat Machine","Pendulum Squat","V-Squat Machine","Leg Extension","Single-Leg Extension","Seated Leg Curl","Lying Leg Curl","Standing Leg Curl","Standing Calf Raise Machine","Seated Calf Raise","Leg Press Calf Raise","Hip Abduction Machine","Hip Adduction Machine","Glute Kickback Machine","Hip Thrust Machine","Chest Press Machine","Incline Press Machine","Decline Press Machine","Pec Deck Fly","Reverse Pec Deck","Shoulder Press Machine","Lateral Raise Machine","Lat Pulldown","Wide-Grip Pulldown","Close-Grip Pulldown","Reverse-Grip Pulldown","Single-Arm Pulldown","Straight-Arm Pulldown","Seated Cable Row","Wide-Grip Cable Row","Single-Arm Cable Row","Machine Row","High Row Machine","Low Row Machine","T-Bar Row","Assisted Pull-Up","Assisted Dip","Machine Dip","Preacher Curl Machine","Machine Bicep Curl","Cable Curl","Cable Hammer Curl (Rope)","Bayesian Curl","Rope Pushdown","Straight-Bar Pushdown","V-Bar Pushdown","Single-Arm Pushdown","Overhead Cable Extension","Cable Crossover","Cable Fly (High-to-Low)","Cable Fly (Low-to-High)","Cable Lateral Raise","Cable Rear Delt Fly","Cable Front Raise","Face Pull","Cable Upright Row","Cable Pull-Through","Cable Crunch","Cable Woodchop","Cable Rotation","Rotary Torso Machine","Ab Crunch Machine","Back Extension Bench","Reverse Hyperextension","Treadmill Run","Treadmill Incline Walk","Cross Trainer","Spin Bike","Recumbent Bike","Air Bike","Rowing Machine","Stair Climber","Ski Erg"],
+    "Kettlebell & Functional": ["Kettlebell Swing","American Swing","Kettlebell Goblet Squat","Kettlebell Deadlift","Kettlebell Clean","Kettlebell Clean and Press","Kettlebell Snatch","Turkish Get-Up","Kettlebell Windmill","Kettlebell Front Rack Squat","Kettlebell Row","Kettlebell Halo","Kettlebell Overhead Press","Farmer's Carry","Overhead Carry","Front Rack Carry","Battle Ropes","Sled Push","Sled Drag","Tire Flip","Box Jump","Broad Jump","Wall Ball","Medicine Ball Slam","Medicine Ball Rotational Throw","Sandbag Carry","Burpee","Bear Crawl"],
+    "Bodyweight": ["Push-Up","Wide Push-Up","Diamond Push-Up","Decline Push-Up","Archer Push-Up","Pike Push-Up","Handstand Push-Up","Pull-Up","Wide-Grip Pull-Up","Chin-Up","Neutral-Grip Pull-Up","Negative Pull-Up","Dip","Bench Dip","Inverted Row","Bodyweight Squat","Jump Squat","Pistol Squat","Bodyweight Lunge","Jumping Lunge","Nordic Curl","Glute Bridge","Single-Leg Glute Bridge","Calf Raise (Bodyweight)","Plank","Side Plank","Plank Shoulder Tap","Hollow Hold","Superman Hold","Sit-Up","Crunch","Bicycle Crunch","Reverse Crunch","Russian Twist","Leg Raise","Hanging Leg Raise","Hanging Knee Raise","Toes-to-Bar","Mountain Climber","Flutter Kick","V-Up","Dead Hang","L-Sit","Wall Sit","Jumping Jack","High Knees"],
+    "Yoga": ["Surya Namaskar","Chandra Namaskar","Tadasana (Mountain)","Vrikshasana (Tree)","Trikonasana (Triangle)","Parivrtta Trikonasana","Virabhadrasana I","Virabhadrasana II","Virabhadrasana III","Utkatasana (Chair)","Uttanasana (Forward Fold)","Adho Mukha Svanasana (Down Dog)","Urdhva Mukha Svanasana (Up Dog)","Bhujangasana (Cobra)","Shalabhasana (Locust)","Dhanurasana (Bow)","Ustrasana (Camel)","Setu Bandhasana (Bridge)","Chakrasana (Wheel)","Paschimottanasana","Janu Sirsasana","Ardha Matsyendrasana","Marichyasana","Naukasana (Boat)","Navasana Hold","Balasana (Child)","Garudasana (Eagle)","Natarajasana (Dancer)","Ardha Chandrasana (Half Moon)","Utthita Parsvakonasana","Malasana (Garland)","Baddha Konasana (Bound Angle)","Upavistha Konasana","Supta Baddha Konasana","Eka Pada Rajakapotasana (Pigeon)","Halasana (Plough)","Sarvangasana (Shoulder Stand)","Sirsasana (Headstand)","Matsyasana (Fish)","Vasisthasana (Side Plank)","Phalakasana (Plank)","Anulom Vilom","Kapalbhati","Bhastrika","Bhramari Pranayama","Ujjayi Breathing","Trataka","Yoga Nidra","Shavasana"],
+    "Stretching & Mobility": ["Hamstring Stretch","Standing Toe Touch","Quad Stretch","Hip Flexor Stretch","Couch Stretch","Calf Stretch (Wall)","Soleus Stretch","Ankle Circles","Ankle Dorsiflexion Rock","Butterfly Stretch","Frog Stretch","90/90 Hip Stretch","Figure-4 Glute Stretch","Seated Spinal Twist","Lower Back Twist (Lying)","Cat-Cow","Thread the Needle","Child's Pose Reach","Cobra Stretch","Thoracic Extension (Foam Roller)","Chest Doorway Stretch","Cross-Body Shoulder Stretch","Overhead Triceps Stretch","Lat Stretch (Bar Hang)","Wrist Flexor Stretch","Wrist Extensor Stretch","Neck Rolls","Levator Scapulae Stretch","World's Greatest Stretch","Leg Swings (Front-Back)","Leg Swings (Side)","Arm Circles","Hip Circles","Deep Squat Hold","Foam Roll Quads","Foam Roll Hamstrings","Foam Roll Calves","Foam Roll Upper Back","Foam Roll Lats","Foam Roll IT Band","Foam Roll Glutes"]
+  };
+  var exlibCat = "Barbell", exlibTarget = "#lift-rows", exlibQ = "";
+  function exlibAllCats(){ return Object.keys(EXLIB).concat((state.exlib || []).length ? ["Mine"] : []); }
+  function renderExlib(){
+    var box = document.getElementById("exlibbox");
+    if (!box || box.hidden) return;
+    var cats = exlibAllCats();
+    if (cats.indexOf(exlibCat) === -1) exlibCat = cats[0];
+    document.getElementById("exlib-cats").innerHTML = cats.map(function(c){
+      return '<button type="button" class="btn-ghost" data-excat="' + esc(c) + '" style="padding:5px 11px;font-size:12px' + (c === exlibCat ? ";color:var(--gold-hi);border-color:var(--gold)" : "") + '">' + esc(c) + "</button>";
+    }).join("");
+    var items = (exlibCat === "Mine" ? (state.exlib || []) : EXLIB[exlibCat]) || [];
+    var q = exlibQ.trim().toLowerCase();
+    if (q){
+      items = [];
+      exlibAllCats().forEach(function(c){
+        ((c === "Mine" ? state.exlib : EXLIB[c]) || []).forEach(function(n){ if (n.toLowerCase().indexOf(q) > -1) items.push(n); });
+      });
+    }
+    document.getElementById("exlib-list").innerHTML = items.length
+      ? items.map(function(n){ return '<button type="button" class="exlib-item" data-expick="' + esc(n) + '">' + esc(n) + "</button>"; }).join("")
+      : '<div class="empty">Nothing matches — add it as your own below.</div>';
+  }
+  function exlibOpen(target){
+    exlibTarget = target; exlibQ = "";
+    var si = document.getElementById("exlib-q");
+    if (si) si.value = "";
+    document.getElementById("exlibbox").hidden = false;
+    renderExlib();
+  }
+  function exlibPick(name){
+    var host = document.querySelector(exlibTarget);
+    if (!host) return;
+    var blocks = host.querySelectorAll(".exblock");
+    var target = null;
+    blocks.forEach(function(b){ if (!target && !b.querySelector(".lx-name").value.trim()) target = b; });
+    if (!target){
+      host.insertAdjacentHTML("beforeend", exBlockHtml());
+      target = host.querySelector(".exblock:last-child");
+    }
+    var inp = target.querySelector(".lx-name");
+    inp.value = name;
+    var h = target.querySelector(".exhint");
+    if (h) h.textContent = exHintFor(name);
+    document.getElementById("exlibbox").hidden = true;
+    var firstKg = target.querySelector(".s-kg");
+    if (firstKg) setTimeout(function(){ firstKg.focus(); }, 50);
+  }
+
   var gymEditIdx = null, exBookSel = null, sportEdit = null;
   function sportEditFormHtml(id, e){
     var isRun = id === "w-run";
@@ -1956,7 +2062,8 @@
       '<input type="number" id="ge-min" value="' + e.min + '" min="5" max="300" class="stepin" style="width:76px">' +
       '<span class="hintlbl">re-forging ' + esc(e.t) + "</span></div>" +
       '<div id="gedit-rows">' + ((e.lifts && e.lifts.length) ? e.lifts.map(function(l){ return exBlockHtml(l.name, setsOf(l)); }).join("") : exBlockHtml()) + "</div>" +
-      '<button type="button" class="btn-ghost" data-mact="addlift2" style="padding:5px 12px;font-size:13px">＋ Add exercise</button>' +
+      '<button type="button" class="btn-ghost" data-mact="addlift2" style="padding:5px 12px;font-size:13px">＋ Add exercise</button> ' +
+      '<button type="button" class="btn-ghost" data-mact="exlib2" style="padding:5px 12px;font-size:13px;color:var(--gold-hi)">📖 The Armoury</button>' +
       '<div class="erow2" style="margin-top:10px"><button class="btn btn-sm" data-gsave="1" type="button">Save changes</button>' +
       '<button class="btn-ghost" data-gcancel="1" type="button" style="padding:6px 12px">Cancel</button></div></div>';
   }
@@ -2069,7 +2176,8 @@
           "</div>" +
           fld('<label>The lifts — set by set. Start typing a name to see your last session and record.</label>' +
             '<div id="lift-rows">' + exBlockHtml() + "</div>" +
-            '<button type="button" class="btn-ghost" data-mact="addlift" style="padding:5px 12px;font-size:13px">＋ Add exercise</button>' +
+            '<button type="button" class="btn-ghost" data-mact="addlift" style="padding:5px 12px;font-size:13px">＋ Add exercise</button> ' +
+            '<button type="button" class="btn-ghost" data-mact="exlib" style="padding:5px 12px;font-size:13px;color:var(--gold-hi)">📖 The Armoury</button>' +
             exListHtml()) +
           painFields();
       },
@@ -2727,6 +2835,7 @@
     }
   });
   document.addEventListener("input", function(e){
+    if (e.target && e.target.id === "exlib-q"){ exlibQ = e.target.value; renderExlib(); return; }
     if (e.target.matches && e.target.matches(".lx-name")){
       var b = e.target.closest(".exblock");
       var h = b && b.querySelector(".exhint");
@@ -3521,9 +3630,47 @@
       (L.length ? L.map(function(x){
         return '<div class="cd-q"><span>' + esc(shortName(x.q.title)) + "</span><span>" + (x.done ? "<b style='color:var(--gold-hi)'>✓ done</b>" : "<span class='gap-over'>✗ not done</span>") + "</span></div>";
       }).join("") : '<div class="empty">Nothing was due that day.</div>') +
-      (calSel < todayStr() ? '<div class="hintlbl" style="margin-top:6px">Did something that day but forgot to log it? Use “Backfill a day” on the Quest Board.</div>' : "");
+      '<div class="vline"><b style="color:var(--gold)">Score</b> \u2014 ' + dayScore(calSel).score + "/100</div>" +
+      (calSel < todayStr() ? '<div style="margin-top:7px"><button class="btn-ghost" data-calbf="' + calSel + '" type="button" style="padding:5px 12px;font-size:12.5px">\u23ea Backfill this day</button></div>' : "");
   }
   document.addEventListener("click", function(e){
+    var xc = e.target.closest && e.target.closest("[data-excat]");
+    if (xc){ exlibCat = xc.dataset.excat; exlibQ = ""; var xq = document.getElementById("exlib-q"); if (xq) xq.value = ""; renderExlib(); return; }
+    var xp = e.target.closest && e.target.closest("[data-expick]");
+    if (xp){ exlibPick(xp.dataset.expick); return; }
+    if (e.target.closest && e.target.closest("#exlib-close")){ document.getElementById("exlibbox").hidden = true; return; }
+    if (e.target === document.getElementById("exlibbox")){ e.target.hidden = true; return; }
+    if (e.target.closest && e.target.closest("#exlib-save")){
+      var nv = document.getElementById("exlib-new").value.trim();
+      if (!nv){ document.getElementById("exlib-new").focus(); return; }
+      mutate(function(){
+        state.exlib = state.exlib || [];
+        if (state.exlib.indexOf(nv) === -1) state.exlib.push(nv);
+        addLog("Armoury grew: " + esc(nv));
+      });
+      document.getElementById("exlib-new").value = "";
+      exlibCat = "Mine"; exlibQ = "";
+      var xq2 = document.getElementById("exlib-q");
+      if (xq2) xq2.value = "";
+      renderExlib();
+      toast("📖 " + esc(nv) + " kept in your Armoury");
+      return;
+    }
+    var bf = e.target.closest && e.target.closest("[data-calbf]");
+    if (bf){
+      viewDate = bf.dataset.calbf;
+      var binp = document.getElementById("bf-date");
+      binp.value = viewDate;
+      binp.max = yesterdayStr();
+      binp.min = state.arc ? state.arc.start : addDays(todayStr(), -60);
+      setBackfillUI();
+      var bbtn = document.querySelector('.tabbtn[data-tab="quests"]');
+      if (bbtn) bbtn.click();
+      var sd = document.getElementById("sec-daily");
+      if (sd) setTimeout(function(){ sd.scrollIntoView({ behavior: "smooth" }); }, 60);
+      toast("\u23ea Backfilling " + viewDate + " \u2014 tick what you actually did, then \u201cBack to today\u201d.");
+      return;
+    }
     var cd = e.target.closest && e.target.closest("[data-cald]");
     if (cd){ calSel = calSel === cd.dataset.cald ? null : cd.dataset.cald; renderCalendar(); return; }
     if (e.target.closest && e.target.closest("#cal-prev")){
@@ -3537,6 +3684,77 @@
       calMonth = y3 + "-" + String(m3).padStart(2, "0"); calSel = null; renderCalendar(); return;
     }
   });
+  // ---------- the verdict: a system score for every day ----------
+  function dayScore(d){
+    var L = calDueList(d);
+    var due = L.length, done = L.filter(function(x){ return x.done; }).length;
+    var parts = [];
+    var qpct = due ? done / due : 1;
+    parts.push({ k: "Quests", got: Math.round(qpct * 50), max: 50, note: done + "/" + due + " done" });
+    var dow = new Date(d + "T12:00:00").getDay();
+    var needId = dow === 1 ? "w-cycle" : (dow === 2 || dow === 4 || dow === 6) ? "w-gym" : "w-run";
+    var tq = state.quests.find(function(x){ return x.id === needId; });
+    var trained = !!(tq && (tq.slog || []).some(function(e){ return e.t === d; }));
+    var sheltered = state.arc && ((state.arc.shelterDays && state.arc.shelterDays[d]) || (state.arc.shelterFrom && d >= state.arc.shelterFrom));
+    parts.push({ k: "Training", got: trained || sheltered ? 15 : 0, max: 15,
+      note: trained ? shortName(tq.title) + " done" : sheltered ? "sheltered" : shortName(tq ? tq.title : "session") + " missed" });
+    var sq = state.quests.find(function(x){ return x.kind === "counter"; });
+    var stp = (sq && sq.log && sq.log[d]) || 0;
+    var spct = sq ? Math.min(1, stp / (sq.target || 15000)) : 0;
+    parts.push({ k: "March", got: Math.round(spct * 10), max: 10, note: stp ? stp.toLocaleString() + " steps" : "no steps logged" });
+    var sl = state.sleep.find(function(e){ return e.t === d; });
+    parts.push({ k: "Rest", got: sl ? (sl.hours >= 7 ? 10 : sl.hours >= 6 ? 6 : 3) : 0, max: 10, note: sl ? sl.hours + "h slept" : "sleep not logged" });
+    var fl = habitsOn("ember", d).length + habitsOn("siren", d).length;
+    parts.push({ k: "Flames", got: fl === 0 ? 10 : Math.max(0, 10 - fl * 3), max: 10, note: fl ? "gave in " + fl + "\u00d7" : "both flames cold" });
+    var open = state.reframes.filter(function(r){ return r.t === d && !r.good; }).length;
+    parts.push({ k: "Tongue", got: open ? 0 : 5, max: 5, note: open ? open + " complaint unanswered" : "all reframed" });
+    var score = parts.reduce(function(a, p){ return a + p.got; }, 0);
+    return { score: score, parts: parts };
+  }
+  var FOCUS_MSG = {
+    Quests: "the unticked dailies \u2014 tick as you go, not at midnight",
+    Training: "the scheduled session \u2014 it anchors the whole day",
+    March: "steps \u2014 bank them before evening swallows the count",
+    Rest: "sleep \u2014 the bedtime is a quest too",
+    Flames: "the old flames \u2014 log the urge, then outlast it",
+    Tongue: "the open complaint \u2014 answer it before the day ends"
+  };
+  function gradeWord(s){
+    return s >= 90 ? "A DAY FOR THE SCROLL" : s >= 75 ? "A SOLID DAY\u2019S WORK" : s >= 60 ? "UNEVEN \u2014 BUT COUNTED" : s >= 40 ? "A ROUGH PAGE" : "THE ARC NOTICED";
+  }
+  function gradeColor(s){ return s >= 90 ? "var(--gold-hi)" : s >= 75 ? "#8fbe8f" : s >= 60 ? "#d9b96a" : "#e0a1a1"; }
+  function renderVerdict(){
+    var el = document.getElementById("vd-body");
+    if (!el) return;
+    var live = document.getElementById("vd-live");
+    var today = todayStr();
+    if (state.arc && today >= state.arc.start){
+      live.textContent = "today so far: " + dayScore(today).score + "/100";
+    } else { live.textContent = ""; }
+    var y = addDays(today, -1);
+    if (!state.arc || y < state.arc.start){
+      el.innerHTML = '<div class="empty">The first verdict is written after your first full day \u2014 tomorrow at dawn.</div>';
+      return;
+    }
+    var V = dayScore(y);
+    var right = V.parts.filter(function(p){ return p.got >= p.max * 0.8; });
+    var wrong = V.parts.filter(function(p){ return p.got < p.max * 0.5; });
+    var focus = V.parts.slice().sort(function(a, b){ return (a.got / a.max) - (b.got / b.max); })[0];
+    el.innerHTML =
+      '<div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">' +
+      '<div><span class="vscore" style="color:' + gradeColor(V.score) + '">' + V.score + '</span><span style="color:var(--ink-faint);font-size:13px">/100</span>' +
+      '<div class="vgrade" style="color:' + gradeColor(V.score) + '">' + gradeWord(V.score) + "</div></div>" +
+      '<span class="hintlbl">yesterday \u00b7 ' + esc(y) + "</span></div>" +
+      '<div class="vparts">' + V.parts.map(function(p){
+        var cls = p.got >= p.max * 0.8 ? " v-full" : p.got < p.max * 0.5 ? " v-low" : "";
+        return '<span class="vpart' + cls + '">' + p.k + " " + p.got + "/" + p.max + "</span>";
+      }).join("") + "</div>" +
+      (right.length ? '<div class="vline"><b style="color:var(--gold-hi)">What held</b> \u2014 ' + right.map(function(p){ return p.note; }).join(" \u00b7 ") + "</div>" : "") +
+      (wrong.length ? '<div class="vline"><b style="color:#e0a1a1">What slipped</b> \u2014 ' + wrong.map(function(p){ return p.note; }).join(" \u00b7 ") + "</div>" : "") +
+      '<div class="vline"><b style="color:#a8cbec">Focus today</b> \u2014 ' + (FOCUS_MSG[focus.k] || focus.k) + "</div>" +
+      (wrong.some(function(p){ return p.k === "Quests"; }) ? '<div class="vline"><button class="btn-ghost" data-calbf="' + y + '" type="button" style="padding:5px 12px;font-size:12.5px">\u23ea Did some of it but forgot to log? Backfill ' + y.slice(5) + "</button></div>" : "");
+  }
+
   function renderDaySheet(){
     var el = document.getElementById("daysheet-table");
     if (!el) return;
@@ -3631,7 +3849,9 @@
       }).join("") : '<tr><td colspan="5"><i>No iron moved yet.</i></td></tr>');
     var ebSel = document.getElementById("exbook-sel");
     if (ebSel){
-      var names = exNames();
+      var seenH = {};
+      gymSlog().forEach(function(e2){ (e2.lifts || []).forEach(function(l){ if (l.name) seenH[l.name.trim()] = 1; }); });
+      var names = Object.keys(seenH).sort();
       if (exBookSel && names.indexOf(exBookSel) === -1) exBookSel = null;
       if (!exBookSel && names.length) exBookSel = names[0];
       ebSel.innerHTML = names.length
@@ -3785,7 +4005,7 @@
     document.getElementById("log-list").innerHTML = html || '<div class="empty">Your story begins today.</div>';
   }
   function renderAll(){
-    renderHeader(); renderStats(); renderSpirit(); renderReframes(); renderPurse(); renderEmber(); renderBell(); renderQuests(); renderRewards(); renderVictory();
+    renderHeader(); renderStats(); renderVerdict(); renderSpirit(); renderReframes(); renderPurse(); renderEmber(); renderBell(); renderQuests(); renderRewards(); renderVictory();
     renderBoss(); renderTrophies(); renderOmens();
     renderBooks(); renderJournals(); renderTransform(); renderPortraits(); renderCheckins(); renderRecords(); renderLog();
   }
@@ -3797,8 +4017,10 @@
     b.style.color = viewDate ? "#a8cbec" : "";
     b.style.borderColor = viewDate ? "#4a6f9e" : "";
     inp.hidden = !viewDate;
-    document.getElementById("daily-sub").textContent = viewDate
-      ? "Backfilling " + viewDate + " — ticks award base XP; if that day was already tolled, the toll comes back too. Streaks aren't rebuilt, but the ledger is made honest."
+    var ds = document.getElementById("daily-sub");
+    ds.style.cssText = viewDate ? "background:rgba(74,111,158,.16);border:1px solid #4a6f9e;border-radius:8px;padding:9px 11px;color:#a8cbec" : "";
+    ds.textContent = viewDate
+      ? "\u23ea BACKFILLING " + viewDate + " — ticks award base XP; if that day was already tolled, the toll comes back too. Streaks aren't rebuilt, but the ledger is made honest."
       : "Reset each dawn. During the Arc an unfinished daily costs half its XP — but the toll lands a dawn late, and any day can be backfilled.";
     renderQuests();
   }
@@ -3851,6 +4073,10 @@
         document.getElementById("lift-rows").insertAdjacentHTML("beforeend", exBlockHtml());
       } else if (ml.dataset.mact === "addlift2"){
         document.getElementById("gedit-rows").insertAdjacentHTML("beforeend", exBlockHtml());
+      } else if (ml.dataset.mact === "exlib"){
+        exlibOpen("#lift-rows");
+      } else if (ml.dataset.mact === "exlib2"){
+        exlibOpen("#gedit-rows");
       } else if (ml.dataset.mact === "addmeal"){
         document.getElementById("meal-rows").insertAdjacentHTML("beforeend", mealRowHtml(""));
       } else if (ml.dataset.mact === "addset"){
@@ -4263,10 +4489,6 @@
       if (state[H.key].length > 800) state[H.key].length = 800;
       revoke("hab", xp);
       addLog(H.logMsg + " (" + n + "× today) <b>−" + xp + " XP</b>");
-      if (kind === "siren"){
-        var vq = state.quests.find(function(x){ return x.id === "d-vow"; });
-        if (vq && vq.lastDone === todayStr()){ undoDone(vq); addLog("The Monk's Vow untied — the siren sang today"); }
-      }
       toast(H.glyph + " −" + xp + " XP · " + n + "× today<br>Logged honestly — that's the part that counts.");
     });
   }
@@ -5159,7 +5381,7 @@
       if (!p || !Array.isArray(p.quests)) throw 0;
       Object.keys(state).forEach(function(k){ delete state[k]; });
       Object.assign(state, p);
-      ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers","sirens","portraits"].forEach(function(k){ state[k] = state[k] || []; });
+      ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers","sirens","portraits","exlib"].forEach(function(k){ state[k] = state[k] || []; });
       state.xpDaily = state.xpDaily || {}; state.tollLog = state.tollLog || {};
       state.trophies = state.trophies || {}; state.bosses = state.bosses || {};
       state.coins = state.coins || 0;
@@ -5186,7 +5408,7 @@
       mutate(function(){
         Object.keys(state).forEach(function(k){ delete state[k]; });
         Object.assign(state, parsed);
-        ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers","sirens","portraits"].forEach(function(k){ state[k] = state[k] || []; });
+        ["books","journal","articles","chronicle","sleep","gaps","meals","reviews","checkins","body","niggles","chapters","moods","reframes","spends","embers","sirens","portraits","exlib"].forEach(function(k){ state[k] = state[k] || []; });
         state.xpDaily = state.xpDaily || {}; state.tollLog = state.tollLog || {};
         state.trophies = state.trophies || {}; state.bosses = state.bosses || {};
         state.coins = state.coins || 0;
