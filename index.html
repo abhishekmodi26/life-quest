@@ -602,13 +602,14 @@
 
 <canvas id="embers" aria-hidden="true"></canvas>
 <div class="wrap">
-  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 15</span></p>
+  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 17</span></p>
 
   <header class="charsheet">
     <div class="char-top">
       <div class="char-name-block">
         <input id="char-name" value="" aria-label="Character name" maxlength="40">
         <div class="char-rank">Level <b id="rank-lvl">1</b> · <b id="rank-name">Peasant</b> of the Waking World</div>
+        <div id="today-line" style="margin-top:6px;font-family:var(--disp);font-size:12.5px;font-weight:600;letter-spacing:.16em;color:var(--gold-hi);text-transform:uppercase"></div>
       </div>
       <div class="ringbox" aria-hidden="true">
         <svg viewBox="0 0 100 100">
@@ -1488,17 +1489,17 @@
     q.log[d] = val;
     if (val >= q.target && d === today && q.lastDone !== today){
       markDone(q);
-      addLog("Marched " + val.toLocaleString() + " " + q.unit + " <b>+" + xp + " XP</b>" + (q.streak > 1 ? " · " + q.streak + "-day streak" : ""));
+      addLog("Marched " + val.toLocaleString() + " " + (q.unit || "glasses") + " <b>+" + xp + " XP</b>" + (q.streak > 1 ? " · " + q.streak + "-day streak" : ""));
       toast("+" + xp + " XP — target reached!" + (q.streak > 1 ? " · streak " + q.streak : ""));
     } else if (val >= q.target && d !== today && !(q.doneLog && q.doneLog[d])){
       q.doneLog = q.doneLog || {}; q.doneLog[d] = 2;
       award(q.area, xp);
       refundToll(q, d);
-      addLog("Backfilled " + val.toLocaleString() + " " + q.unit + " for " + d + " <b>+" + xp + " XP</b>");
+      addLog("Backfilled " + val.toLocaleString() + " " + (q.unit || "glasses") + " for " + d + " <b>+" + xp + " XP</b>");
       toast("+" + xp + " XP — that day's march counted");
     } else {
-      addLog("Logged " + val.toLocaleString() + " " + q.unit + (d !== today ? " for " + d : ""));
-      toast(val.toLocaleString() + " / " + q.target.toLocaleString() + " " + q.unit + " logged");
+      addLog("Logged " + val.toLocaleString() + " " + (q.unit || "glasses") + (d !== today ? " for " + d : ""));
+      toast(val.toLocaleString() + " / " + q.target.toLocaleString() + " " + (q.unit || "glasses") + " logged");
     }
   }
   function waterAdjust(q, delta, d){
@@ -1772,7 +1773,7 @@
       var wd = {};
       tk.forEach(function(d){ var w = new Date(d + "T12:00:00").getDay(); wd[w] = (wd[w] || 0) + 1; });
       var worst = Object.keys(wd).sort(function(a, b){ return wd[b] - wd[a]; })[0];
-      out.push("Tolls fall most on <b>" + DAYNAMES[worst] + "s</b> (" + wd[worst] + " of " + tk.length + ") — guard that day.");
+      out.push("Tolls fall most on <b>" + DAYFULL[worst] + "s</b> (" + wd[worst] + " of " + tk.length + ") — guard that day.");
     }
     if (state.gaps.length >= 14){
       var g7 = avg(state.gaps.slice(0, 7).map(function(g){ return g.self - g.actual; }));
@@ -2944,9 +2945,15 @@
       toast("+" + (base + ref) + " XP — " + d + " made right" + (ref ? " · toll returned" : ""));
     }
   }
+  var DAYFULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   function renderHeader(){
     var info = totalLvl();
     document.getElementById("char-name").value = state.name;
+    var tl = document.getElementById("today-line");
+    if (tl){
+      var now = new Date();
+      tl.textContent = DAYFULL[now.getDay()] + " \u00b7 " + now.getDate() + " " + MONTHNAMES[now.getMonth()] + " " + now.getFullYear();
+    }
     document.getElementById("badge-lvl").textContent = info.lvl;
     document.getElementById("rank-lvl").textContent = info.lvl;
     document.getElementById("rank-name").textContent = rankFor(info.lvl);
@@ -3629,9 +3636,29 @@
       (stp ? " · " + stp.toLocaleString() + " steps" : "") +
       (sl ? " · slept " + sl.hours + "h" : "") + "</div>" +
       (L.length ? L.map(function(x){
-        return '<div class="cd-q"><span>' + esc(shortName(x.q.title)) + "</span><span>" + (x.done ? "<b style='color:var(--gold-hi)'>✓ done</b>" : "<span class='gap-over'>✗ not done</span>") + "</span></div>";
-      }).join("") : '<div class="empty">Nothing was due that day.</div>') +
-      '<div class="vline"><b style="color:var(--gold)">Score</b> \u2014 ' + dayScore(calSel).score + "/100</div>" +
+        var q = x.q, editable = calSel < todayStr();
+        if (q.kind){
+          var cur = (q.log && q.log[calSel]) || 0;
+          var hit = cur >= q.target;
+          return '<div class="cd-q"><span>' + esc(shortName(q.title)) + "</span><span style='display:flex;gap:5px;align-items:center'>" +
+            (editable
+              ? '<input type="number" class="stepin" data-calcnt="' + q.id + '" value="' + (cur || "") + '" min="0" placeholder="0" style="width:74px;padding:4px 6px;font-size:12.5px">' +
+                '<button class="btn-ghost" data-calset="' + q.id + '" type="button" style="padding:3px 9px;font-size:11.5px">Set</button>'
+              : (hit ? "<b style='color:var(--gold-hi)'>\u2713 " + cur.toLocaleString() + "</b>" : cur ? cur.toLocaleString() + " / " + q.target.toLocaleString() : "<span class='gap-over'>\u2717 not logged</span>")) +
+            "</span></div>";
+        }
+        var mark = q.doneLog && q.doneLog[calSel];
+        var lbl = x.done
+          ? (mark === 2 ? "<b style='color:var(--gold-hi)'>\u2713 backfilled</b>" : "<b style='color:var(--gold-hi)'>\u2713 done</b>")
+          : "<span class='gap-over'>\u2717 not done</span>";
+        if (editable){
+          return '<button type="button" class="cd-q cd-edit" data-caltog="' + q.id + '" style="width:100%;background:none;border:none;color:inherit;font:inherit;cursor:pointer;text-align:left"><span>' +
+            esc(shortName(q.title)) + "</span><span>" + lbl + "</span></button>";
+        }
+        return '<div class="cd-q"><span>' + esc(shortName(q.title)) + "</span><span>" + lbl + "</span></div>";
+      }).join("") + (calSel < todayStr() ? '<div class="hintlbl" style="margin-top:5px">Tap a row to correct it \u2014 marks made on the day itself stay protected.</div>' : "")
+        : '<div class="empty">Nothing was due that day.</div>') +
+      (function(){ var cs = dayScore(calSel); return cs.sheltered ? '<div class="vline">\u26fa sheltered \u2014 no score owed</div>' : '<div class="vline"><b style="color:var(--gold)">Score</b> \u2014 ' + cs.score + "/100</div>"; })() +
       (calSel < todayStr() ? '<div style="margin-top:7px"><button class="btn-ghost" data-calbf="' + calSel + '" type="button" style="padding:5px 12px;font-size:12.5px">\u23ea Backfill this day</button></div>' : "");
   }
   document.addEventListener("click", function(e){
@@ -3672,6 +3699,26 @@
       toast("\u23ea Backfilling " + viewDate + " \u2014 tick what you actually did, then \u201cBack to today\u201d.");
       return;
     }
+    var ct = e.target.closest && e.target.closest("[data-caltog]");
+    if (ct && calSel){
+      var tq = state.quests.find(function(x){ return x.id === ct.dataset.caltog; });
+      if (tq){
+        if (tq.doneLog && tq.doneLog[calSel] === 1){
+          toast("Marked on the day itself — that record is protected.");
+        } else {
+          mutate(function(){ completeBackfill(tq, calSel); });
+        }
+      }
+      return;
+    }
+    var cs2 = e.target.closest && e.target.closest("[data-calset]");
+    if (cs2 && calSel){
+      var cq2 = state.quests.find(function(x){ return x.id === cs2.dataset.calset; });
+      var cin2 = document.querySelector('[data-calcnt="' + cs2.dataset.calset + '"]');
+      var cv2 = Math.max(0, Math.floor(Number(cin2 && cin2.value) || 0));
+      if (cq2){ mutate(function(){ logCounter(cq2, cv2, calSel); }); }
+      return;
+    }
     var cd = e.target.closest && e.target.closest("[data-cald]");
     if (cd){ calSel = calSel === cd.dataset.cald ? null : cd.dataset.cald; renderCalendar(); return; }
     if (e.target.closest && e.target.closest("#cal-prev")){
@@ -3699,6 +3746,10 @@
     return r;
   }
   function dayScore(d){
+    var shel = state.arc && ((state.arc.shelterDays && state.arc.shelterDays[d]) || (state.arc.shelterFrom && d >= state.arc.shelterFrom));
+    if (shel){
+      return { score: null, sheltered: true, parts: [], due: 0, done: 0 };
+    }
     var L = calDueList(d);
     var due = L.length, done = L.filter(function(x){ return x.done; }).length;
     var missed = L.filter(function(x){ return !x.done; }).map(function(x){ return shortName(x.q.title); });
@@ -3709,19 +3760,23 @@
       text: done + " of " + due + " done" +
         (missed.length === 0 ? " — a clean sweep" : missed.length <= 3 ? " — missed " + missed.join(", ") : " — " + missed.length + " left unticked") });
     var dow = new Date(d + "T12:00:00").getDay();
-    var sheltered = state.arc && ((state.arc.shelterDays && state.arc.shelterDays[d]) || (state.arc.shelterFrom && d >= state.arc.shelterFrom));
     var isRest = state.arc && dow === state.arc.restDay;
     var tr = trainingOn(d);
-    parts.push({ k: "Training", got: (tr || sheltered || isRest) ? 15 : 0, max: 15,
-      state: tr ? 2 : (sheltered || isRest) ? 2 : 0,
-      text: tr ? tr : sheltered ? "sheltered — no session owed" : isRest ? "rest day — recovery is training too" : "no session logged" });
+    parts.push({ k: "Training", got: (tr || isRest) ? 15 : 0, max: 15,
+      state: tr ? 2 : isRest ? 2 : 0,
+      text: tr ? tr : isRest ? "rest day — recovery is training too" : "no session logged" });
     var sq = state.quests.find(function(x){ return x.kind === "counter"; });
     var stp = (sq && sq.log && sq.log[d]) || 0;
     var tgt = (sq && sq.target) || 15000;
     var spct = Math.min(1, stp / tgt);
-    parts.push({ k: "Steps", got: Math.round(spct * 10), max: 10,
-      state: spct >= 1 ? 2 : spct >= 0.6 ? 1 : 0,
-      text: stp ? stp.toLocaleString() + " of " + tgt.toLocaleString() : "no steps logged" });
+    if (isRest){
+      parts.push({ k: "Steps", got: 10, max: 10, state: 2,
+        text: stp ? stp.toLocaleString() + " walked on a rest day — bonus ground" : "rest day — the march stands down" });
+    } else {
+      parts.push({ k: "Steps", got: Math.round(spct * 10), max: 10,
+        state: spct >= 1 ? 2 : spct >= 0.6 ? 1 : 0,
+        text: stp ? stp.toLocaleString() + " of " + tgt.toLocaleString() : "no steps logged" });
+    }
     var sl = state.sleep.find(function(e){ return e.t === d; });
     parts.push({ k: "Sleep", got: sl ? (sl.hours >= 7 ? 10 : sl.hours >= 6 ? 6 : 3) : 0, max: 10,
       state: sl ? (sl.hours >= 7 ? 2 : sl.hours >= 6 ? 1 : 0) : 0,
@@ -3798,6 +3853,10 @@
       return;
     }
     var V = dayScore(y);
+    if (V.sheltered){
+      el.innerHTML = '<div class="empty">⛺ Yesterday was spent in shelter — no verdict is owed on a day of recovery. Strike the shelter when you return.</div>';
+      return;
+    }
     var focus = V.parts.filter(function(p){ return p.state < 2; })
       .sort(function(a, b){ return (a.got / a.max) - (b.got / b.max); })[0];
     el.innerHTML =
@@ -4623,16 +4682,35 @@
     "The ledger waits. Give it a minute of truth."
   ];
   function bellAvailable(){ return typeof Notification !== "undefined"; }
+  var chimeCtx = null;
+  function chime(){
+    try {
+      chimeCtx = chimeCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (chimeCtx.state === "suspended") chimeCtx.resume();
+      var t0 = chimeCtx.currentTime;
+      [[880, 0, 0.35], [1174.66, 0.18, 0.45]].forEach(function(n){
+        var o = chimeCtx.createOscillator(), g = chimeCtx.createGain();
+        o.type = "sine"; o.frequency.value = n[0];
+        g.gain.setValueAtTime(0.0001, t0 + n[1]);
+        g.gain.exponentialRampToValueAtTime(0.22, t0 + n[1] + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + n[1] + n[2]);
+        o.connect(g); g.connect(chimeCtx.destination);
+        o.start(t0 + n[1]); o.stop(t0 + n[1] + n[2] + 0.05);
+      });
+    } catch (e){}
+  }
   function showNotif(msg){
+    var opts = { body: msg, icon: "./icon-192.png", badge: "./icon-192.png", tag: "lq-bell", renotify: true, silent: false, vibrate: [240, 120, 240, 120, 360] };
     try {
       if (navigator.serviceWorker && navigator.serviceWorker.controller){
         navigator.serviceWorker.ready.then(function(reg){
-          reg.showNotification("Life Quest", { body: msg, icon: "./icon-192.png", badge: "./icon-192.png", tag: "lq-bell" });
+          reg.showNotification("Life Quest", opts);
         }).catch(function(){});
       } else {
-        new Notification("Life Quest", { body: msg });
+        new Notification("Life Quest", opts);
       }
     } catch (e){}
+    if (document.visibilityState === "visible"){ chime(); if (navigator.vibrate) try { navigator.vibrate([240, 120, 240]); } catch (e2){} }
   }
   function bellTick(){
     if (window.__viewMode) return;
@@ -4659,7 +4737,8 @@
     if (!bellAvailable()){
       st.textContent = "Notifications aren't available in this view — they work in the phone app.";
     } else if (state.notifOn && Notification.permission === "granted"){
-      st.innerHTML = "🔔 <b style='color:var(--hab)'>The bell is ringing</b> at the times below.";
+      st.innerHTML = "🔔 <b style='color:var(--hab)'>The bell is ringing</b> at the times below." +
+        "<br><span class='hintlbl'>While the app is open it also chimes aloud. If background pings buzz but stay mute: long-press the LQ icon → App info → Notifications → tap the category → set a Sound. Android owns the ringtone; the app can only ask.</span>";
     } else if (Notification.permission === "denied"){
       st.textContent = "Blocked by the browser — allow notifications for this site in Android's app settings, then enable.";
     } else {
@@ -4731,6 +4810,8 @@
     bellDbg("permission: " + Notification.permission);
     bellDbg("bell enabled in app: " + (state.notifOn ? "yes" : "no"));
     bellDbg("service worker controlling: " + (navigator.serviceWorker && navigator.serviceWorker.controller ? "yes" : "no"));
+    chime();
+    bellDbg("chime played in-app — if you heard a two-note bell, the app's own sound works.");
     if (Notification.permission !== "granted"){ bellDbg("→ fix permission first, then Test again."); return; }
     var done = false;
     if (navigator.serviceWorker && navigator.serviceWorker.getRegistration){
@@ -4738,7 +4819,7 @@
       navigator.serviceWorker.getRegistration().then(function(reg){
         if (done) return;
         if (reg && reg.showNotification){
-          reg.showNotification("Life Quest", { body: "🔔 Test ring — the bell works.", icon: "./icon-192.png", tag: "lq-test" })
+          reg.showNotification("Life Quest", { body: "🔔 Test ring — the bell works.", icon: "./icon-192.png", tag: "lq-test", renotify: true, silent: false, vibrate: [240, 120, 240, 120, 360] })
             .then(function(){ done = true; clearTimeout(t); bellDbg("→ RING SENT via service worker. Did you see it?"); })
             .catch(function(e){ done = true; clearTimeout(t); bellDbg("SW ring failed: " + (e && e.message)); tryDirect(); });
         } else { done = true; clearTimeout(t); bellDbg("no SW registration — trying direct…"); tryDirect(); }
