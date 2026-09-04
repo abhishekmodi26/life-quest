@@ -1,4 +1,4 @@
-var C = "lifequest-v2";
+var C = "lifequest-v4";
 self.addEventListener("install", function(e){
   e.waitUntil(caches.open(C).then(function(c){
     return c.addAll(["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"]);
