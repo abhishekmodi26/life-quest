@@ -778,7 +778,7 @@
 
 <canvas id="embers" aria-hidden="true"></canvas>
 <div class="wrap">
-  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 29</span></p>
+  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 31</span></p>
 
   <header class="charsheet">
     <div class="char-top">
@@ -1532,6 +1532,22 @@
       seen[e.t] = 1; return true;
     });
   })();
+  function sealToBody(d){
+    if (!d || !d.kg) return;
+    state.body = state.body || [];
+    if (state.body.some(function(e){ return e.t === d.t; })) return;
+    var meas = {};
+    ["neck", "chest", "stomach", "hips", "armL", "armR", "thighL", "thighR", "calfL", "calfR"].forEach(function(k){ if (d[k] != null) meas[k] = d[k]; });
+    var vitals = {};
+    ["hrv", "rhr", "vo2"].forEach(function(k){ if (d[k] != null) vitals[k] = d[k]; });
+    var entry = { t: d.t, kg: d.kg };
+    if (d.waist != null) entry.waist = d.waist;
+    if (Object.keys(meas).length) entry.meas = meas;
+    if (Object.keys(vitals).length) entry.vitals = vitals;
+    state.body.push(entry);
+    state.body.sort(function(a, b){ return a.t < b.t ? 1 : -1; });
+  }
+  if (state.transform){ sealToBody(state.transform.start); sealToBody(state.transform.end); }
   state.coins = state.coins || 0;
   state.rewards = (state.rewards || []).map(function(r){
     return typeof r === "string" ? { name: r, cost: 150 } : r;
@@ -4617,7 +4633,7 @@
     var sl = state.sleep.find(function(e){ return e.t === d; });
     var slGot = 0, slTxt = "not logged", slState = 0;
     if (sl){
-      var hPts = sl.hours >= 7 ? 7 : sl.hours >= 6 ? 4 : 2;
+      var hPts = sl.hours >= 7 ? 7 : sl.hours >= 6 ? 6 : 2;
       var bPts = 0, bTxt = "";
       if (sl.bed){
         var bp = sl.bed.split(":");
@@ -4628,7 +4644,7 @@
       }
       slGot = hPts + bPts;
       slState = slGot >= 9 ? 2 : slGot >= 5 ? 1 : 0;
-      slTxt = sl.hours + "h" + (sl.hours >= 7 ? "" : " — under the 7h line") + bTxt;
+      slTxt = sl.hours + "h" + (sl.hours >= 7 ? "" : sl.hours >= 6 ? " — enough, though 7h is the aim" : " — under the 6h floor") + bTxt;
     }
     parts.push({ k: "Sleep", got: slGot, max: 10, state: slState, text: slTxt });
     var fl = habitsOn("ember", d).length + habitsOn("siren", d).length;
@@ -4817,11 +4833,11 @@
           var dd2 = addDays(y, -di);
           if (state.arc && dd2 < state.arc.start) break;
           var se = state.sleep.find(function(x){ return x.t === dd2; });
-          if (se){ dNights++; if (se.hours < 7) debt += 7 - se.hours; }
+          if (se){ dNights++; if (se.hours < 6) debt += 6 - se.hours; }
         }
         debt = Math.round(debt * 10) / 10;
         if (dNights >= 3 && debt >= 2){
-          html += '<div class="vlapse unex"><b>😴 Sleep debt:</b> ' + debt + "h behind the 7-hour line over the last week — the debt collects at the gym and in the mirror.</div>";
+          html += '<div class="vlapse unex"><b>😴 Sleep debt:</b> ' + debt + "h behind the 6-hour line over the last week — 7h is the aim, 6h is the floor, and this debt collects at the gym and in the mirror.</div>";
         }
         var wq = state.quests.find(function(x){ return x.kind === "water"; });
         var wg = (wq && wq.log && wq.log[y]) || 0;
@@ -6638,6 +6654,7 @@
           vo2: Number(document.getElementById("t-" + side + "-vo2").value) || undefined,
           photos: photos
         };
+        sealToBody(state.transform[side]);
         award("hab", side === "start" ? 50 : 200);
         addLog(side === "start"
           ? "<b>Day One sealed</b> — the before is on the record <b>+50 XP</b>"
