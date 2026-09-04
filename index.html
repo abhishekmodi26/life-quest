@@ -778,7 +778,7 @@
 
 <canvas id="embers" aria-hidden="true"></canvas>
 <div class="wrap">
-  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 27</span></p>
+  <p class="eyebrow">Life Quest <span id="buildtag" style="font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:none">· build 29</span></p>
 
   <header class="charsheet">
     <div class="char-top">
@@ -1299,6 +1299,9 @@
         <button class="btn-ghost" id="herald" type="button">📜 Share a progress scroll</button>
         <button class="btn-ghost" id="vault-print" type="button">🖨 Print the Great Ledger</button>
       </div>
+      <div style="margin:10px 0 0">
+        <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--ink-mut);cursor:pointer"><input type="checkbox" id="vault-courier" style="width:18px;height:18px;accent-color:var(--acc)"> 🌙 Midnight Courier — save a full backup automatically on the first open of each day</label>
+      </div>
       <p class="psub" id="vault-note" style="margin:10px 0 0"></p>
       <p class="psub" style="margin:8px 0 0">Witnesses: to let your wife or trainer <b>view</b> the ledger, tap <b>Send the Raven</b> — it delivers the Sharing Scroll straight to your repo as <b>progress.json</b> in one tap (one-time key setup). Or upload the Sharing Scroll by hand. Then send them your app link with <b>?view</b> at the end — they see your record read-only, refreshed whenever you upload a new scroll. The Sharing Scroll strips your private entries — journals, chronicle, reframes, the Ember, the Coin Ledger, and all photos — keeping weight, measurements, vitals, training, sleep, and streaks. Keep the full <b>Export backup</b> for yourself only; the repo is public.</p>
     </section>
@@ -1522,6 +1525,13 @@
     if (state.arc.restDay == null) state.arc.restDay = 0; // Sunday: training tolls waived
     state.arc.shelterDays = state.arc.shelterDays || {};
   }
+  (function(){ // one night, one record — drop older duplicates for the same date
+    var seen = {};
+    state.sleep = (state.sleep || []).filter(function(e){
+      if (seen[e.t]) return false;
+      seen[e.t] = 1; return true;
+    });
+  })();
   state.coins = state.coins || 0;
   state.rewards = (state.rewards || []).map(function(r){
     return typeof r === "string" ? { name: r, cost: 150 } : r;
@@ -1620,7 +1630,7 @@
   // ---------- core game actions ----------
   function addLog(msg){
     state.log.unshift({ t: todayStr(), msg: msg });
-    if (state.log.length > 14) state.log.length = 14;
+    if (state.log.length > 120) state.log.length = 120;
   }
   var __bootAt = Date.now(), __lastBurst = 0;
   function fxOn(){
@@ -3057,6 +3067,24 @@
     switch (q.id){
       case "d-sleep": return {
         title: "Sleep Ledger", sub: "Last night, adventurer — when did you rest, and how was it?",
+        _calcHours: function(){
+          var toMin = function(t){ var p = t.split(":"); return Number(p[0]) * 60 + Number(p[1]); };
+          var bed = val("m-bed") || "23:00", wake = val("m-wake") || "07:00";
+          var h = Math.round(((toMin(wake) - toMin(bed) + 1440) % 1440) / 6) / 10;
+          if (h > 15){ // almost certainly an AM/PM slip on the bed time — try the 12-hour flip
+            var bp = bed.split(":");
+            var flip = ((Number(bp[0]) + 12) % 24);
+            var h2 = Math.round(((toMin(wake) - (flip * 60 + Number(bp[1])) + 1440) % 1440) / 6) / 10;
+            if (h2 >= 2 && h2 <= 14){
+              var fixed = String(flip).padStart(2, "0") + ":" + bp[1];
+              var el = document.getElementById("m-bed");
+              if (el) el.value = fixed;
+              toast("That bed time read as " + h + "h of sleep — corrected " + bed + " → " + fixed + ".");
+              return h2;
+            }
+          }
+          return h;
+        },
         fields: function(){
           var last = state.sleep[0] || {};
           return '<div class="mgrid">' +
@@ -3069,8 +3097,7 @@
             "</div>";
         },
         score: function(){
-          var toMin = function(t){ var p = t.split(":"); return Number(p[0]) * 60 + Number(p[1]); };
-          var hours = Math.round(((toMin(val("m-wake") || "07:00") - toMin(val("m-bed") || "23:00") + 1440) % 1440) / 6) / 10;
+          var hours = this._calcHours();
           this._hours = hours;
           var hs = (hours >= 7 && hours <= 9.5) ? 5 : hours >= 6 ? 3 : hours > 0 ? 1 : 0;
           var qs = { Excellent: 3, Good: 2.5, Okay: 1.5, Poor: .5, Terrible: 0 }[val("m-qual")] || 0;
@@ -3085,6 +3112,7 @@
             hours: this._hours, quality: val("m-qual"), wakeups: wakes };
           if (deep) entry.deep = deep;
           if (rem) entry.rem = rem;
+          state.sleep = (state.sleep || []).filter(function(x){ return x.t !== entry.t; });
           state.sleep.unshift(entry);
           addLog("Slept <b>" + this._hours + "h</b> (" + val("m-qual").toLowerCase() + ", woke " + wakes + "×" +
             (deep ? ", deep " + deep + "h" : "") + (rem ? ", REM " + rem + "h" : "") + ")");
@@ -3875,14 +3903,16 @@
       : '<div class="empty">No answers to this one yet — tonight\'s journal starts the thread.</div>';
   }
   function renderJournals(){
-    var j = state.journal.slice(0, 8).map(function(e){
-      return '<div class="jentry"><span class="lt">' + esc(e.t.slice(5)) + "</span><b>" + esc(e.book) + "</b> — " + esc(e.text) + "</div>";
+    var j = state.journal.slice(0, 8).map(function(e, i){
+      return '<div class="jentry"><span class="lt">' + esc(e.t.slice(5)) + "</span><b>" + esc(e.book) + "</b> — " + esc(e.text) +
+        ' <button type="button" class="btn-ghost" data-wedit="journal|' + i + '" style="padding:1px 8px;font-size:11.5px">✎</button></div>';
     }).join("");
     if (state.journal.length > 8) j += '<div class="empty">…and ' + (state.journal.length - 8) + " earlier entries, kept safe.</div>";
     document.getElementById("journal-list").innerHTML = j || '<div class="empty">Complete the reading quest to write your first entry.</div>';
 
-    var a = state.articles.slice(0, 8).map(function(e){
-      return '<div class="jentry"><span class="lt">' + esc(e.t.slice(5)) + "</span><b>" + esc(e.title) + "</b> — " + esc(e.text) + "</div>";
+    var a = state.articles.slice(0, 8).map(function(e, i){
+      return '<div class="jentry"><span class="lt">' + esc(e.t.slice(5)) + "</span><b>" + esc(e.title) + "</b> — " + esc(e.text) +
+        ' <button type="button" class="btn-ghost" data-wedit="articles|' + i + '" style="padding:1px 8px;font-size:11.5px">✎</button></div>';
     }).join("");
     if (state.articles.length > 8) a += '<div class="empty">…and ' + (state.articles.length - 8) + " earlier notes.</div>";
     document.getElementById("article-list").innerHTML = a || '<div class="empty">Complete the Substack quest to leave your first note.</div>';
@@ -3897,7 +3927,8 @@
         inner += '<p style="margin:0 0 6px"><span style="color:var(--gold);font-size:13px">' + esc(x.q) + "</span><br>" + esc(x.a) + "</p>";
       });
       if (e.text) inner += "<p style='margin:0'>" + esc(e.text) + "</p>";
-      return '<div class="chron"><div class="ct">' + esc(e.t) + (e.mood ? " · " + esc(e.mood) : "") + "</div>" + (inner || "<p>—</p>") + "</div>";
+      return '<div class="chron"><div class="ct">' + esc(e.t) + (e.mood ? " · " + esc(e.mood) : "") +
+        ' <button type="button" class="btn-ghost" data-wedit="chronicle|' + state.chronicle.indexOf(e) + '" style="padding:1px 8px;font-size:11.5px;float:right">✎</button></div>' + (inner || "<p>—</p>") + "</div>";
     }).join("");
     if (state.chronicle.length > 10) c += '<div class="empty">…and ' + (state.chronicle.length - 10) + " earlier days, kept safe.</div>";
     document.getElementById("chron-list").innerHTML = c || '<div class="empty">Complete “Chronicle the Day” to write your first entry.</div>';
@@ -4374,11 +4405,15 @@
         : '<div class="empty">Nothing was due that day.</div>') +
       (function(){
         var dm = state.meals.find(function(e){ return e.t === calSel; });
-        if (!dm || !dm.items.length) return '<div class="vline" style="color:var(--ink-faint)">\ud83c\udf7d no meals logged</div>';
+        var mbtn = ' <button type="button" class="btn-ghost" data-mealedit="' + calSel + '" style="padding:1px 8px;font-size:11.5px">✎</button>';
+        if (!dm || !dm.items.length) return '<div class="vline" style="color:var(--ink-faint)">\ud83c\udf7d no meals logged' + mbtn + "</div>";
         return '<div class="vline">\ud83c\udf7d <b style="color:var(--gold)">The table</b> \u2014 ' +
-          dm.items.map(function(it){ return esc(it.at) + " " + esc(it.what); }).join(" \u00b7 ") + "</div>";
+          dm.items.map(function(it){ return esc(it.at) + " " + esc(it.what); }).join(" \u00b7 ") + mbtn + "</div>";
       })() +
       (function(){ var cs = dayScore(calSel); return cs.sheltered ? '<div class="vline">\u26fa sheltered \u2014 no score owed</div>' : '<div class="vline"><b style="color:var(--gold)">Score</b> \u2014 ' + cs.score + "/100</div>"; })() +
+      '<div style="margin-top:7px"><button class="btn-ghost" data-caldoc="' + calSel + '" type="button" style="padding:5px 12px;font-size:12.5px">📜 The Day\u2019s Scroll — print everything from this day</button></div>' +
+      (state.arc && state.arc.shelterDays && state.arc.shelterDays[calSel]
+        ? '<div style="margin-top:7px"><button class="btn-ghost" data-calunshel="' + calSel + '" type="button" style="padding:5px 12px;font-size:12.5px;border-color:#7a5c2e;color:#e0c9a0">⛺ This day was sheltered — strike the shelter from it</button></div>' : "") +
       (calSel < todayStr() ? '<div style="margin-top:7px"><button class="btn-ghost" data-calbf="' + calSel + '" type="button" style="padding:5px 12px;font-size:12.5px">\u23ea Backfill this day</button></div>' : "");
   }
   document.addEventListener("click", function(e){
@@ -4429,12 +4464,82 @@
       }
       return;
     }
+    var me = e.target.closest && e.target.closest("[data-mealedit]");
+    if (me){
+      var md3 = me.dataset.mealedit;
+      var dm2 = (state.meals || []).find(function(x){ return x.t === md3; }) || { items: [] };
+      var mrow = function(at, what){
+        return '<div class="liftrow" style="display:flex;gap:6px;margin-bottom:6px"><input type="time" class="me-at" value="' + esc(at || "") + '" style="width:110px;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:7px 8px;color-scheme:dark"><input type="text" class="me-what" maxlength="120" value="' + esc(what || "") + '" placeholder="what was eaten" style="flex:1;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:7px 8px"></div>';
+      };
+      document.getElementById("editpane").innerHTML =
+        '<h3 style="margin:0 0 2px">The Table of ' + esc(md3) + "</h3>" +
+        '<p class="mp" style="margin:0 0 6px">Blank a row to remove that meal.</p>' +
+        '<div id="me-rows">' + (dm2.items.map(function(it){ return mrow(it.at, it.what); }).join("") || "") + mrow("", "") + "</div>" +
+        '<button type="button" class="btn-ghost" id="me-add" style="padding:5px 12px;font-size:13px">＋ Add a meal</button>' +
+        '<div class="erow2" style="margin-top:12px"><button class="btn" data-mealsave="' + md3 + '" type="button">Save the table</button><button class="btn-ghost" data-lapcancel type="button">Cancel</button></div>';
+      document.getElementById("editbox").hidden = false;
+      return;
+    }
+    if (e.target && e.target.id === "me-add"){
+      document.getElementById("me-rows").insertAdjacentHTML("beforeend",
+        '<div class="liftrow" style="display:flex;gap:6px;margin-bottom:6px"><input type="time" class="me-at" style="width:110px;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:7px 8px;color-scheme:dark"><input type="text" class="me-what" maxlength="120" placeholder="what was eaten" style="flex:1;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:7px 8px"></div>');
+      return;
+    }
+    var ms2 = e.target.closest && e.target.closest("[data-mealsave]");
+    if (ms2){
+      var md4 = ms2.dataset.mealsave;
+      var items2 = [];
+      document.querySelectorAll("#me-rows .liftrow").forEach(function(row){
+        var what2 = row.querySelector(".me-what").value.trim();
+        if (!what2) return;
+        items2.push({ at: row.querySelector(".me-at").value || "", what: what2 });
+      });
+      mutate(function(){
+        state.meals = (state.meals || []).filter(function(x){ return x.t !== md4; });
+        if (items2.length) state.meals.unshift({ t: md4, items: items2 });
+        addLog("The table of " + md4 + " was corrected by hand");
+      });
+      document.getElementById("editbox").hidden = true;
+      toast("The table is corrected.");
+      return;
+    }
+    var dd = e.target.closest && e.target.closest("[data-caldoc]");
+    if (dd){
+      var pd2 = document.getElementById("printdoc");
+      if (!pd2){ pd2 = document.createElement("div"); pd2.id = "printdoc"; document.body.appendChild(pd2); }
+      pd2.innerHTML = '<div class="pbar"><button type="button" id="pd-print">🖨 Print / Save as PDF</button><button type="button" class="ghost" id="pd-close">Close</button></div>' + buildDayReportHTML(dd.dataset.caldoc);
+      document.body.classList.add("lq-print");
+      pd2.scrollTop = 0;
+      return;
+    }
+    var us = e.target.closest && e.target.closest("[data-calunshel]");
+    if (us){
+      var ud = us.dataset.calunshel;
+      mutate(function(){
+        if (state.arc && state.arc.shelterDays) delete state.arc.shelterDays[ud];
+        addLog("⛺ Shelter struck from " + ud + " — the day rejoins the arc and is scored again");
+      });
+      toast("⛺ " + ud + " rejoins the arc — it is scored and editable like any other day.");
+      return;
+    }
     var ct = e.target.closest && e.target.closest("[data-caltog]");
     if (ct && calSel){
       var tq = state.quests.find(function(x){ return x.id === ct.dataset.caltog; });
       if (tq){
         if (tq.doneLog && tq.doneLog[calSel] === 1){
-          toast("Marked on the day itself — that record is protected.");
+          var k1 = tq.id + "|" + calSel;
+          if (window.__unlock !== k1 || Date.now() - (window.__unlockAt || 0) > 6000){
+            window.__unlock = k1; window.__unlockAt = Date.now();
+            toast("Marked on the day itself — protected. Tap again within 6s to unprotect and remove the mark.");
+          } else {
+            window.__unlock = null;
+            mutate(function(){
+              delete tq.doneLog[calSel];
+              revoke(tq.area, DIFF[tq.diff].xp);
+              addLog("The protected " + calSel + " mark on “" + esc(tq.title) + "” was struck out by hand");
+            });
+            toast("Mark removed. Log the day again through its form if it deserves better truth.");
+          }
         } else if (FORMQ[tq.id] && !isDoneOn(tq, calSel)){
           openModal(tq, false, calSel);
         } else {
@@ -5009,12 +5114,13 @@
       }).join("") : '<tr><td colspan="2"><i>Log meals in the Clean Feast debrief.</i></td></tr>');
     var s = state.sleep.slice(0, 14);
     document.getElementById("sleep-table").innerHTML =
-      "<tr><th>Date</th><th>Bed</th><th>Wake</th><th>Hours</th><th>Deep</th><th>REM</th><th>Quality</th><th>Wakings</th></tr>" +
+      "<tr><th>✎</th><th>Date</th><th>Bed</th><th>Wake</th><th>Hours</th><th>Deep</th><th>REM</th><th>Quality</th><th>Wakings</th></tr>" +
       (s.length ? s.map(function(e){
-        return "<tr><td>" + esc(e.t) + "</td><td>" + esc(e.bed) + "</td><td>" + esc(e.wake) + "</td><td><b>" + e.hours + "h</b></td>" +
+        return '<tr><td><button type="button" class="btn-ghost" data-sleepedit="' + e.t + '" style="padding:2px 9px;font-size:12px" aria-label="Edit this night">✎</button></td>' +
+          "<td>" + esc(e.t) + "</td><td>" + esc(e.bed) + "</td><td>" + esc(e.wake) + "</td><td><b>" + e.hours + "h</b></td>" +
           "<td>" + (e.deep ? e.deep + "h" : "—") + "</td><td>" + (e.rem ? e.rem + "h" : "—") + "</td>" +
           '<td class="qual-' + esc(e.quality) + '">' + esc(e.quality) + "</td><td>" + e.wakeups + "×</td></tr>";
-      }).join("") : '<tr><td colspan="8"><i>No nights logged yet.</i></td></tr>');
+      }).join("") : '<tr><td colspan="9"><i>No nights logged yet.</i></td></tr>');
     [["ember", "ember-table", "ember-note", "Nothing burned yet. Keep it that way.", "the ember has never won."],
      ["siren", "siren-table", "siren-note", "Silence, so far. Keep it that way.", "the siren has never won."]].forEach(function(cfg){
       var hEl = document.getElementById(cfg[1]);
@@ -5028,7 +5134,8 @@
           var es = byDay[d];
           var lost = es.reduce(function(a, e){ return a + e.xp; }, 0);
           var times = es.map(function(e){ return e.at + (e.trig ? " (" + e.trig + ")" : ""); }).sort().join(", ");
-          return "<tr><td>" + esc(d.slice(5)) + "</td><td><b>" + es.length + "</b></td><td class=\"gap-over\">−" + lost + "</td><td>" + esc(times) + "</td></tr>";
+          return "<tr><td>" + esc(d.slice(5)) + "</td><td><b>" + es.length + "</b></td><td class=\"gap-over\">−" + lost + "</td><td>" + esc(times) +
+            ' <button type="button" class="btn-ghost" data-flamerm="' + cfg[0] + "|" + d + '" style="padding:1px 7px;font-size:11px" title="Remove the most recent entry of this day (its XP returns)">✕</button></td></tr>';
         }).join("") : '<tr><td colspan="4"><i>' + cfg[3] + "</i></td></tr>");
       var nEl = document.getElementById(cfg[2]);
       if (nEl){
@@ -5195,6 +5302,21 @@
       }
       return;
     }
+    var fr = e.target.closest("[data-flamerm]");
+    if (fr){
+      var fp = fr.dataset.flamerm.split("|"), fk = fp[0], fd = fp[1];
+      mutate(function(){
+        var HH2 = HABITS[fk];
+        var idx = (state[HH2.key] || []).findIndex(function(x){ return x.t === fd; });
+        if (idx > -1){
+          var gone = state[HH2.key].splice(idx, 1)[0];
+          award("hab", gone.xp || 0);
+          addLog("A " + fd + " entry of " + HH2.name.toLowerCase() + " was struck out — its " + (gone.xp || 0) + " XP returns");
+        }
+      });
+      toast("Entry removed — the toll returns.");
+      return;
+    }
     var lpe = e.target.closest("[data-lapedit]");
     if (lpe){
       var ld = lpe.dataset.lapedit, LL = lap(ld);
@@ -5214,8 +5336,135 @@
         lin("le-coffee", "☕ Late cups", LL.coffee) +
         "</div>" +
         '<div class="frow"><label for="le-junkwhat" style="display:block;font-size:12px;color:var(--ink-mut);margin:8px 0 3px">🍬 What was the junk?</label><input type="text" id="le-junkwhat" maxlength="120" value="' + esc(LL.junkWhat || "") + '" style="width:100%;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px"></div>' +
+        (function(){
+          function lsel(id, label, cur, opts){
+            return '<div><label for="' + id + '" style="display:block;font-size:12px;color:var(--ink-mut);margin:8px 0 3px">' + label + '</label><select id="' + id + '" style="width:100%;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px">' +
+              '<option value="">—</option>' +
+              opts.map(function(o){ return '<option value="' + o[0] + '"' + (String(cur) === String(o[0]) ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></div>";
+          }
+          var TR = TRIGGERS.map(function(t){ return [t, t]; });
+          return '<div class="mgrid">' +
+            lsel("le-energy", "Morning energy", LL.energy, [["4","Charged"],["3","Ready"],["2","Sluggish"],["1","Empty"]]) +
+            lsel("le-sore", "The body", LL.sore, [["3","Fresh"],["2","A little sore"],["1","Sore and heavy"],["0","Something hurts"]]) +
+            lsel("le-stress", "The day\u2019s weight", LL.stress, [["3","Calm"],["2","Manageable"],["1","Heavy"],["0","Crushing"]]) +
+            lsel("le-conn", "A real conversation", LL.connect, [["2","Yes"],["1","Small talk"],["0","Barely spoke"]]) +
+            lsel("le-intdone", "The one thing", LL.intentDone, [["2","Done"],["1","Part of it"],["0","Didn\u2019t happen"]]) +
+            lsel("le-junkwhy", "Junk was", LL.junkWhy, [["craving","Craving"],["hunger","Hunger"]]) +
+            lsel("le-swtrig", "🗣 trigger", LL.swearTrig, TR) +
+            lsel("le-cotrig", "😤 trigger", LL.compTrig, TR) +
+            lsel("le-jutrig", "🍬 trigger", LL.junkTrig, TR) +
+            "</div>" +
+            '<div class="frow"><label for="le-intent" style="display:block;font-size:12px;color:var(--ink-mut);margin:8px 0 3px">➤ The one thing named</label><input type="text" id="le-intent" maxlength="120" value="' + esc(LL.intent || "") + '" style="width:100%;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px"></div>' +
+            '<div class="frow"><label for="le-wake" style="display:block;font-size:12px;color:var(--ink-mut);margin:8px 0 3px">Rose at</label><input type="time" id="le-wake" value="' + (LL.wake || "") + '" style="width:100%;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;color-scheme:dark"></div>';
+        })() +
         '<div class="erow2" style="margin-top:12px"><button class="btn" data-lapsave="' + ld + '" type="button">Save the correction</button><button class="btn-ghost" data-lapcancel type="button">Cancel</button></div>';
       document.getElementById("editbox").hidden = false;
+      return;
+    }
+    var sle = e.target.closest("[data-sleepedit]");
+    if (sle){
+      var sd = sle.dataset.sleepedit;
+      var se = state.sleep.find(function(x){ return x.t === sd; }) || {};
+      function sfl(id, label, v, type){ return '<div><label for="' + id + '" style="display:block;font-size:12px;color:var(--ink-mut);margin:8px 0 3px">' + label + '</label><input type="' + (type || "number") + '" id="' + id + '" value="' + (v != null ? v : "") + '" style="width:100%;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;color-scheme:dark"></div>'; }
+      document.getElementById("editpane").innerHTML =
+        '<h3 style="margin:0 0 2px">Correct the night of ' + esc(sd) + "</h3>" +
+        '<p class="mp" style="margin:0 0 6px">Hours recompute from the times. Deleting removes the record entirely.</p>' +
+        '<div class="mgrid">' +
+        sfl("sle-bed", "Went to bed", se.bed || "23:00", "time") +
+        sfl("sle-wake", "Woke up", se.wake || "07:00", "time") +
+        sfl("sle-wakes", "Times woken", se.wakeups || 0) +
+        sfl("sle-deep", "Deep (h)", se.deep) +
+        sfl("sle-rem", "REM (h)", se.rem) +
+        "</div>" +
+        '<div class="erow2" style="margin-top:12px"><button class="btn" data-sleepsave="' + sd + '" type="button">Save the night</button>' +
+        '<button class="btn-ghost" data-sleepdel="' + sd + '" type="button" style="border-color:#7a3a3a;color:#e8b4b4">Delete record</button>' +
+        '<button class="btn-ghost" data-lapcancel type="button">Cancel</button></div>';
+      document.getElementById("editbox").hidden = false;
+      return;
+    }
+    var we = e.target.closest("[data-wedit]");
+    if (we){
+      var wp = we.dataset.wedit.split("|"), wkind = wp[0], wi = Number(wp[1]);
+      var ent = (state[wkind] || [])[wi];
+      if (!ent) return;
+      function wta(id, label, v){ return '<div><label for="' + id + '" style="display:block;font-size:12px;color:var(--ink-mut);margin:8px 0 3px">' + label + '</label><textarea id="' + id + '" rows="3" style="width:100%;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px">' + esc(v || "") + "</textarea></div>"; }
+      function wtx(id, label, v){ return '<div><label for="' + id + '" style="display:block;font-size:12px;color:var(--ink-mut);margin:8px 0 3px">' + label + '</label><input type="text" id="' + id + '" maxlength="200" value="' + esc(v || "") + '" style="width:100%;background:#0d0918;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px"></div>'; }
+      var body = "";
+      if (wkind === "journal") body = wtx("we-a", "Book", ent.book) + wta("we-b", "The note", ent.text);
+      if (wkind === "articles") body = wtx("we-a", "Article", ent.title) + wta("we-b", "The note", ent.text);
+      if (wkind === "chronicle") body = wta("we-g", "Grateful for", ent.grat) + wta("we-w", "Biggest win", ent.win) + wta("we-t", "Do better tomorrow", ent.better) + wta("we-b", "The chronicle", ent.text);
+      document.getElementById("editpane").innerHTML =
+        '<h3 style="margin:0 0 2px">Correct the entry · ' + esc(ent.t) + "</h3>" + body +
+        '<div class="erow2" style="margin-top:12px"><button class="btn" data-wsave="' + we.dataset.wedit + '" type="button">Save</button>' +
+        '<button class="btn-ghost" data-wdel="' + we.dataset.wedit + '" type="button" style="border-color:#7a3a3a;color:#e8b4b4">Delete entry</button>' +
+        '<button class="btn-ghost" data-lapcancel type="button">Cancel</button></div>';
+      document.getElementById("editbox").hidden = false;
+      return;
+    }
+    var ws = e.target.closest("[data-wsave]");
+    if (ws){
+      var wp2 = ws.dataset.wsave.split("|"), wk2 = wp2[0], wi2 = Number(wp2[1]);
+      mutate(function(){
+        var ent2 = (state[wk2] || [])[wi2];
+        if (!ent2) return;
+        var gv = function(id){ var el2 = document.getElementById(id); return el2 ? el2.value.trim() : ""; };
+        if (wk2 === "journal"){ ent2.book = gv("we-a") || ent2.book; ent2.text = gv("we-b"); }
+        if (wk2 === "articles"){ ent2.title = gv("we-a") || ent2.title; ent2.text = gv("we-b"); }
+        if (wk2 === "chronicle"){ ent2.grat = gv("we-g"); ent2.win = gv("we-w"); ent2.better = gv("we-t"); ent2.text = gv("we-b"); }
+        addLog("An entry of " + ent2.t + " was corrected by hand");
+      });
+      document.getElementById("editbox").hidden = true;
+      toast("Entry corrected.");
+      return;
+    }
+    var wd = e.target.closest("[data-wdel]");
+    if (wd){
+      var wp3 = wd.dataset.wdel.split("|"), wk3 = wp3[0], wi3 = Number(wp3[1]);
+      mutate(function(){
+        var ent3 = (state[wk3] || [])[wi3];
+        if (ent3){ state[wk3].splice(wi3, 1); addLog("An entry of " + ent3.t + " was struck out"); }
+      });
+      document.getElementById("editbox").hidden = true;
+      toast("Entry removed.");
+      return;
+    }
+    var sls = e.target.closest("[data-sleepsave]");
+    if (sls){
+      var sd2 = sls.dataset.sleepsave;
+      mutate(function(){
+        var se2 = state.sleep.find(function(x){ return x.t === sd2; });
+        if (!se2) return;
+        var toMin = function(t){ var p = t.split(":"); return Number(p[0]) * 60 + Number(p[1]); };
+        var bed = (document.getElementById("sle-bed") || {}).value || se2.bed;
+        var wake = (document.getElementById("sle-wake") || {}).value || se2.wake;
+        var h = Math.round(((toMin(wake) - toMin(bed) + 1440) % 1440) / 6) / 10;
+        if (h > 15){
+          var bp = bed.split(":");
+          var flip = ((Number(bp[0]) + 12) % 24);
+          var h2 = Math.round(((toMin(wake) - (flip * 60 + Number(bp[1])) + 1440) % 1440) / 6) / 10;
+          if (h2 >= 2 && h2 <= 14){ bed = String(flip).padStart(2, "0") + ":" + bp[1]; h = h2; }
+        }
+        se2.bed = bed; se2.wake = wake; se2.hours = h;
+        se2.wakeups = Math.max(0, Math.floor(Number((document.getElementById("sle-wakes") || {}).value) || 0));
+        var dv = Number((document.getElementById("sle-deep") || {}).value) || 0;
+        var rv = Number((document.getElementById("sle-rem") || {}).value) || 0;
+        if (dv) se2.deep = Math.round(dv * 10) / 10; else delete se2.deep;
+        if (rv) se2.rem = Math.round(rv * 10) / 10; else delete se2.rem;
+        addLog("The night of " + sd2 + " corrected — " + h + "h");
+      });
+      document.getElementById("editbox").hidden = true;
+      toast("The night is corrected.");
+      return;
+    }
+    var sld = e.target.closest("[data-sleepdel]");
+    if (sld){
+      var sd3 = sld.dataset.sleepdel;
+      mutate(function(){
+        state.sleep = state.sleep.filter(function(x){ return x.t !== sd3; });
+        addLog("The sleep record of " + sd3 + " was struck out");
+      });
+      document.getElementById("editbox").hidden = true;
+      toast("Record removed.");
       return;
     }
     var lps = e.target.closest("[data-lapsave]");
@@ -5232,6 +5481,17 @@
         });
         var jw2 = (document.getElementById("le-junkwhat") || {}).value || "";
         if (jw2.trim()){ cur.junkWhat = jw2.trim(); } else { delete cur.junkWhat; }
+        [["le-energy", "energy", 1], ["le-sore", "sore", 1], ["le-stress", "stress", 1], ["le-conn", "connect", 1], ["le-intdone", "intentDone", 1],
+         ["le-junkwhy", "junkWhy", 0], ["le-swtrig", "swearTrig", 0], ["le-cotrig", "compTrig", 0], ["le-jutrig", "junkTrig", 0]].forEach(function(pp){
+          var el3 = document.getElementById(pp[0]);
+          if (!el3) return;
+          var v3 = el3.value;
+          if (v3 === ""){ delete cur[pp[1]]; } else { cur[pp[1]] = pp[2] ? Number(v3) : v3; }
+        });
+        var iv = ((document.getElementById("le-intent") || {}).value || "").trim();
+        if (iv){ cur.intent = iv; } else { delete cur.intent; delete cur.intentDone; }
+        var wv = (document.getElementById("le-wake") || {}).value || "";
+        if (wv){ cur.wake = wv; } else { delete cur.wake; }
         state.lapses[ld2] = cur;
         addLog("Confessions of " + ld2 + " corrected by hand");
       });
@@ -5291,7 +5551,22 @@
       if (act === "toggle"){
         if (q.type === "side"){ mutate(function(){ completeSide(q); }); }
         else if (ymode){
-          if (FORMQ[q.id] && !isDoneOn(q, vd)){ openModal(q, false); }
+          if (q.doneLog && q.doneLog[vd] === 1){
+            var k2 = q.id + "|" + vd;
+            if (window.__unlock !== k2 || Date.now() - (window.__unlockAt || 0) > 6000){
+              window.__unlock = k2; window.__unlockAt = Date.now();
+              toast("Marked on the day itself — protected. Tap again within 6s to unprotect and remove it.");
+            } else {
+              window.__unlock = null;
+              mutate(function(){
+                delete q.doneLog[vd];
+                revoke(q.area, DIFF[q.diff].xp);
+                addLog("The protected " + vd + " mark on “" + esc(q.title) + "” was struck out by hand");
+              });
+              toast("Mark removed — re-log it through the form for the honest version.");
+            }
+          }
+          else if (FORMQ[q.id] && !isDoneOn(q, vd)){ openModal(q, false); }
           else { mutate(function(){ completeBackfill(q, vd); }); }
         }
         else if (q.lastDone !== todayStr()){ openModal(q, false); }
@@ -5898,6 +6173,8 @@
     var bb = document.getElementById("bell-bed"), br = document.getElementById("bell-risk");
     if (bb) bb.checked = state.bedBell !== false;
     if (br) br.checked = state.riskBell !== false;
+    var vc = document.getElementById("vault-courier");
+    if (vc) vc.checked = state.autoBk !== false;
     if (!bellAvailable()){
       st.textContent = "Notifications aren't available in this view — they work in the phone app.";
     } else if (state.notifOn && Notification.permission === "granted"){
@@ -6546,7 +6823,16 @@
   });
 
   // ---------- shelter ----------
+  var __shelArm = 0;
   document.getElementById("shelter").addEventListener("click", function(){
+    if (state.arc && !state.arc.shelterFrom){
+      if (Date.now() - __shelArm > 6000){
+        __shelArm = Date.now();
+        toast("⛺ Shelter pauses the whole arc. Tap again within 6s if you truly mean to raise it.");
+        return;
+      }
+      __shelArm = 0;
+    }
     mutate(function(){
       var arc = state.arc; if (!arc) return;
       if (arc.shelterFrom){
@@ -6565,6 +6851,22 @@
   });
 
   // ---------- the vault (backup / restore) ----------
+  function courierTick(){
+    try {
+      if (window.__viewMode || state.autoBk === false) return;
+      if (state.autoBkDay === todayStr()) return;
+      mutate(function(){
+        state.autoBkDay = todayStr();
+        addLog("🌙 The Midnight Courier carried out the day's backup");
+      });
+      setTimeout(function(){ document.getElementById("vault-export").click(); }, 400);
+    } catch (e){}
+  }
+  document.addEventListener("visibilitychange", function(){ if (document.visibilityState === "visible") courierTick(); });
+  setTimeout(courierTick, 4000);
+  document.getElementById("vault-courier").addEventListener("change", function(e){
+    mutate(function(){ state.autoBk = !!e.target.checked; addLog(e.target.checked ? "The Midnight Courier is hired" : "The Midnight Courier is dismissed"); });
+  });
   document.getElementById("vault-export").addEventListener("click", function(){
     var blob = new Blob([JSON.stringify(state)], { type: "application/json" });
     var a = document.createElement("a");
@@ -6598,6 +6900,119 @@
     if (arcBooks()) lines.push("Books this arc: " + arcBooks() + " of " + G.books);
     lines.push("— sent from the quest board");
     return lines.join("\n");
+  }
+  // ---------- the day scroll: one day, complete, on paper ----------
+  function buildDayReportHTML(d){
+    var H = [];
+    function sec(fn){ try { fn(); } catch (e){ H.push('<p class="psmall">[section failed: ' + esc(e.message) + "]</p>"); } }
+    var kr = function(s){ return Array.isArray(s) ? [Number(s[0]) || 0, Number(s[1]) || 0] : [Number(s.kg) || 0, Number(s.reps) || 0]; };
+    var DOWN = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date(d + "T12:00:00").getDay()];
+    H.push("<h1>THE SCROLL OF " + d + "</h1>");
+    H.push('<p class="psmall">' + DOWN + " · " + esc(state.name || "") + " · Winter Arc day " +
+      (state.arc ? (Math.round((new Date(d) - new Date(state.arc.start)) / 86400000) + 1) + " of 122" : "") + " · printed " + todayStr() + "</p>");
+    sec(function(){
+      var V = dayScore(d);
+      if (V.sheltered){ H.push('<p class="psmall">⛺ A sheltered day — no score was owed.</p>'); return; }
+      H.push("<h2>THE SCORECARD — " + V.score + "/100</h2>");
+      H.push("<table><tr><th>Part</th><th>Points</th><th>The truth</th></tr>" +
+        V.parts.map(function(p2){ return "<tr><td>" + p2.k + "</td><td><b>" + p2.got + "</b> / " + p2.max + "</td><td>" + p2.text + "</td></tr>"; }).join("") + "</table>");
+      var xp = state.xpDaily[d], toll = (state.tollLog || {})[d];
+      H.push('<p class="psmall">XP earned: <b>' + (xp != null ? xp : "—") + "</b>" + (toll ? " · toll paid: −" + toll : "") + "</p>");
+    });
+    sec(function(){
+      H.push("<h2>THE QUESTS</h2>");
+      H.push("<table><tr><th>Quest</th><th>Done</th><th>Detail</th></tr>" +
+        calDueList(d).map(function(x){
+          var q = x.q, det = "";
+          if (q.kind){ var v = (q.log && q.log[d]) || 0; det = v.toLocaleString() + " / " + q.target.toLocaleString() + " " + (q.unit || "glasses");
+            if (q.tlog && q.tlog[d]) det += " · " + q.tlog[d] + " min walked";
+            if (q.klog && q.klog[d]) det += " · " + q.klog[d] + " kcal"; }
+          var mark = q.doneLog && q.doneLog[d];
+          return "<tr><td>" + esc(shortName(q.title)) + "</td><td>" + (x.done ? "✔" + (mark === 2 ? " (backfilled)" : "") : "✘") + "</td><td>" + det + "</td></tr>";
+        }).join("") + "</table>");
+      var sk = (state.skips || {})[d] || [];
+      if (sk.length) H.push('<p class="psmall">⚠ Marked without debrief: ' + sk.map(function(id){ var q2 = state.quests.find(function(z){ return z.id === id; }); return q2 ? shortName(q2.title) : id; }).join(", ") + "</p>");
+    });
+    sec(function(){
+      var L = (state.lapses || {})[d];
+      H.push("<h2>THE CONFESSIONS & THE INNER WEATHER</h2>");
+      if (!L){ H.push('<p class="psmall">— the day was never examined —</p>'); return; }
+      var stx = { 3: "calm", 2: "manageable", 1: "heavy", 0: "crushing" };
+      var ctx = { 2: "a real conversation", 1: "small talk only", 0: "barely spoke" };
+      var itx = { 2: "done", 1: "part of it", 0: "didn't happen" };
+      var rows = [];
+      if (L.intent != null) rows.push(["➤ The one thing", esc(L.intent) + (L.intentDone != null ? " — <b>" + itx[L.intentDone] + "</b>" : " — never answered")]);
+      if (L.wake != null) rows.push(["Rose at", L.wake]);
+      if (L.phoneMin != null) rows.push(["Phone kept waiting", L.phoneMin + " min"]);
+      if (L.energy != null) rows.push(["Morning energy", ["","empty","sluggish","ready","charged"][L.energy] || L.energy]);
+      if (L.sore != null) rows.push(["The body", ["something hurt","sore and heavy","a little sore","fresh"][L.sore] || L.sore]);
+      if (L.stress != null) rows.push(["The day's weight", stx[L.stress]]);
+      if (L.connect != null) rows.push(["Spoke to someone", ctx[L.connect]]);
+      if (L.swear != null) rows.push(["🗣 Foul words", L.swear + (L.swearTrig ? " (" + L.swearTrig + ")" : "")]);
+      if (L.complaints != null) rows.push(["😤 Complaints escaped", L.complaints + (L.compTrig ? " (" + L.compTrig + ")" : "")]);
+      if (L.junk != null) rows.push(["🍬 Junk strikes", L.junk + (L.junkWhat ? " — " + esc(L.junkWhat) : "") + (L.junkWhy ? " (" + L.junkWhy + ")" : "") + (L.junkTrig ? " · " + L.junkTrig : "")]);
+      if (L.alcohol) rows.push(["🍺 Alcohol", "yes"]);
+      if (L.scroll != null) rows.push(["📱 Social media", L.scroll + " min"]);
+      if (L.coffee != null) rows.push(["☕ Cups after 2pm", L.coffee]);
+      if (L.impulse != null) rows.push(["💸 Impulse buys", L.impulse + (L.impulseAmt ? " · ₹" + L.impulseAmt.toLocaleString() : "")]);
+      if (L.coldSec != null) rows.push(["🧊 The cold", L.coldSec + "s"]);
+      if (L.waterAt && L.waterAt.length) rows.push(["🜄 Glasses at", L.waterAt.slice().sort().join(", ")]);
+      H.push("<table>" + rows.map(function(r2){ return "<tr><td style='width:38%'>" + r2[0] + "</td><td>" + r2[1] + "</td></tr>"; }).join("") + "</table>");
+    });
+    sec(function(){
+      var mo = state.moods.find(function(m){ return m.t === d; });
+      var em = habitsOn("ember", d), si = habitsOn("siren", d);
+      var ug = (state.urges || []).filter(function(e){ return e.t === d; });
+      var bits = [];
+      if (mo) bits.push("Spirit: <b>" + moodMeta(mo.mood)[1] + "</b>" + (mo.note ? " — " + esc(mo.note) : ""));
+      bits.push(em.length ? "🔥 The Ember won " + em.length + "× (" + em.map(function(e){ return e.at + (e.trig ? " · " + e.trig : ""); }).join("; ") + ")" : "🔥 The Ember stayed cold");
+      bits.push(si.length ? "🌊 The Siren won " + si.length + "×" : "🌊 The Siren stayed silent");
+      if (ug.length) bits.push("🛡 Urges outlasted: " + ug.length);
+      H.push("<h2>SPIRIT & THE OLD FLAMES</h2><p class='psmall'>" + bits.join("<br>") + "</p>");
+    });
+    sec(function(){
+      var out = [];
+      ["w-run", "w-cycle", "w-gym"].forEach(function(id){
+        var q = state.quests.find(function(z){ return z.id === id; });
+        (((q && q.slog) || [])).filter(function(e){ return e.t === d; }).forEach(function(e){
+          if (id === "w-gym"){
+            out.push("<b>Iron:</b> " + e.min + " min · " + (e.vol || 0).toLocaleString() + " kg — " +
+              (e.lifts || []).map(function(l){ return esc(l.name) + " " + (l.sets || []).map(function(s){ var a = kr(s); return a[0] + "×" + a[1]; }).join(", "); }).join(" · "));
+          } else {
+            out.push("<b>" + (id === "w-run" ? "Run" : "Ride") + ":</b> " + e.km + " km in " + e.min + " min" + (e.pace ? " · " + e.pace + "/km" : "") + (e.hr ? " · " + e.hr + " bpm" : "") + (e.cad ? " · " + e.cad + " spm" : ""));
+          }
+        });
+      });
+      var sl = state.sleep.find(function(e){ return e.t === d; });
+      if (sl) out.push("<b>Sleep:</b> " + sl.hours + "h · bed " + sl.bed + " → " + sl.wake + " · " + sl.quality + " · woke " + sl.wakeups + "×" + (sl.deep ? " · deep " + sl.deep + "h" : "") + (sl.rem ? " · REM " + sl.rem + "h" : ""));
+      H.push("<h2>THE BODY'S WORK</h2><p class='psmall'>" + (out.length ? out.join("<br>") : "— nothing logged —") + "</p>");
+    });
+    sec(function(){
+      var tm = (state.meals || []).find(function(e){ return e.t === d; });
+      var sp = (state.spends || []).find(function(e){ return e.t === d; });
+      H.push("<h2>THE TABLE & THE PURSE</h2>");
+      H.push('<p class="psmall">' + (tm && tm.items.length ? tm.items.map(function(it){ return esc(it.at) + " — " + esc(it.what); }).join("<br>") : "— no meals logged —") + "</p>");
+      H.push('<p class="psmall">' + (sp && sp.items.length ? sp.items.map(function(it){ return "₹" + it.amt.toLocaleString() + " — " + esc(it.what); }).join("<br>") + "<br><b>Total ₹" + sp.total.toLocaleString() + "</b>" : "— nothing spent, or nothing logged —") + "</p>");
+    });
+    sec(function(){
+      H.push("<h2>THE WRITTEN WORD</h2>");
+      var any = false;
+      (state.journal || []).filter(function(e){ return e.t === d; }).forEach(function(e){ any = true; H.push("<blockquote><b>📖 " + esc(e.book) + "</b><br>" + esc(e.text) + "</blockquote>"); });
+      (state.articles || []).filter(function(e){ return e.t === d; }).forEach(function(e){ any = true; H.push("<blockquote><b>📰 " + esc(e.title) + "</b><br>" + esc(e.text) + "</blockquote>"); });
+      (state.chronicle || []).filter(function(e){ return e.t === d; }).forEach(function(e){
+        any = true;
+        H.push('<blockquote><b>🌙 The Night Journal · ' + esc(e.mood || "") + "</b>" +
+          (e.grat ? "<br><i>Grateful:</i> " + esc(e.grat) : "") +
+          (e.win ? "<br><i>Biggest win:</i> " + esc(e.win) : "") +
+          (e.better ? "<br><i>Do better:</i> " + esc(e.better) : "") +
+          (e.qa || []).map(function(x){ return "<br><i>" + esc(x.q) + "</i> " + esc(x.a); }).join("") +
+          (e.text ? "<br>" + esc(e.text) : "") + "</blockquote>");
+      });
+      (state.reframes || []).filter(function(e){ return e.t === d; }).forEach(function(e){ any = true; H.push("<blockquote><b>⚗ Reframe:</b> " + esc(e.bad) + "<br><i>→</i> " + (e.good ? esc(e.good) : "<i>still owed</i>") + "</blockquote>"); });
+      if (!any) H.push('<p class="psmall">— nothing written this day —</p>');
+    });
+    H.push('<p class="psmall" style="margin-top:18px;border-top:1px solid #cbbfa4;padding-top:6px">One day of the journey, kept in full — proof for the man who lived it.</p>');
+    return H.join("");
   }
   // ---------- the great ledger: everything the app records, on paper ----------
   function buildLedgerHTML(){
@@ -6700,16 +7115,18 @@
       H.push(tbl(["Date", "km", "min", "Speed"], ((cq && cq.slog) || []).map(function(e){ return [e.t, e.km, e.min, e.speed + " km/h"]; })));
       H.push("<h2>TRAINING — IRON SESSIONS</h2>");
       var gq = state.quests.find(function(x){ return x.id === "w-gym"; });
+      var setKR = function(s){ return Array.isArray(s) ? [Number(s[0]) || 0, Number(s[1]) || 0] : [Number(s.kg) || 0, Number(s.reps) || 0]; };
       H.push(tbl(["Date", "min", "Volume", "The lifts"],
         ((gq && gq.slog) || []).map(function(e){
           return [e.t, e.min, (e.vol || 0).toLocaleString() + " kg",
-            (e.lifts || []).map(function(l){ return esc(l.name) + ": " + (l.sets || []).map(function(s){ return s.kg + "×" + s.reps; }).join(", "); }).join("<br>")];
+            (e.lifts || []).map(function(l){ return esc(l.name) + ": " + (l.sets || []).map(function(s){ var kr = setKR(s); return kr[0] + "×" + kr[1]; }).join(", "); }).join("<br>")];
         })));
       var best = {};
       ((gq && gq.slog) || []).forEach(function(e){
         (e.lifts || []).forEach(function(l){
           (l.sets || []).forEach(function(s){
-            if (!best[l.name] || s.kg > best[l.name].kg) best[l.name] = { kg: s.kg, reps: s.reps, t: e.t };
+            var kr = setKR(s);
+            if (!best[l.name] || kr[0] > best[l.name].kg) best[l.name] = { kg: kr[0], reps: kr[1], t: e.t };
           });
         });
       });
